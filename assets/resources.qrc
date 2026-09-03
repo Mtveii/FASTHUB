@@ -1,0 +1,47 @@
+<RCC>
+  <qresource prefix="/">
+    <file>fonts/Manrope-SemiBold.ttf</file>
+    <file>fonts/Inter-Regular.ttf</file>
+    <file>fonts/JetBrainsMono-Regular.ttf</file>
+    <file>icons/fasthub-logo.svg</file>
+    <file>icons/fasthub-logo.png</file>
+    <file>icons/rail-workspace.svg</file>
+    <file>icons/rail-telegram.svg</file>
+    <file>icons/rail-discord.svg</file>
+    <file>icons/rail-steam.svg</file>
+    <file>icons/rail-ai.svg</file>
+    <file>icons/rail-plugins.svg</file>
+    <file>icons/tree-folder.svg</file>
+    <file>icons/tree-folder-open.svg</file>
+    <file>icons/tree-file.svg</file>
+    <file>icons/tree-file-md.svg</file>
+    <file>icons/tree-file-code.svg</file>
+    <file>icons/tree-file-image.svg</file>
+    <file>icons/tree-file-richtext.svg</file>
+    <file>icons/search.svg</file>
+    <file>icons/sun.svg</file>
+    <file>icons/moon.svg</file>
+    <file>icons/plus-lg.svg</file>
+    <file>icons/lightning-charge-fill.svg</file>
+    <file>icons/gear.svg</file>
+    <file>icons/chat-dots.svg</file>
+    <file>icons/sidebar.svg</file>
+    <file>icons/folder.svg</file>
+    <file>icons/bookmark.svg</file>
+    <file>icons/file.svg</file>
+    <file>icons/graph.svg</file>
+    <file>icons/grid.svg</file>
+    <file>icons/canvas.svg</file>
+    <file>icons/calendar.svg</file>
+    <file>icons/copy.svg</file>
+    <file>icons/terminal.svg</file>
+    <file>icons/list.svg</file>
+    <file>icons/pencil.svg</file>
+    <file>icons/folder-plus.svg</file>
+    <file>icons/sort.svg</file>
+    <file>icons/columns.svg</file>
+    <file>icons/x.svg</file>
+    <file>icons/chevron-right.svg</file>
+    <file>icons/chevron-down.svg</file>
+  </qresource>
+</RCC>

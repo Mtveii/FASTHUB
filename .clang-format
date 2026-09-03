@@ -1,0 +1,13 @@
+Language: C++
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+BreakBeforeBraces: Attach
+AccessModifierOffset: -4
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: c++20
+SortIncludes: CaseSensitive
+IncludeIsMainRegex: "_test$"

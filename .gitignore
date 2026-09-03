@@ -1,0 +1,292 @@
+# =============================================================================
+# FastHub — Super Detailed .gitignore
+# C++20 / Qt 6 / CMake / Windows x64+ARM64
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. CMake & Build System (all generators)
+# ---------------------------------------------------------------------------
+build/
+build-*/
+out/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+_deps/
+CMakeUserPresets.json
+
+# Ninja
+.ninja_deps
+.ninja_log
+*.ninja
+
+# Make
+Makefile
+*.make
+
+# ---------------------------------------------------------------------------
+# 2. Compiled Object Files & Libraries
+# ---------------------------------------------------------------------------
+*.o
+*.obj
+*.lo
+*.slo
+*.ko
+*.a
+*.la
+*.lai
+*.so
+*.dll
+*.dylib
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.idb
+*.pch
+*.gch
+
+# Qt MOC / UIC / RCC generated
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.moc
+
+# ---------------------------------------------------------------------------
+# 3. Executables & Packages
+# ---------------------------------------------------------------------------
+*.exe
+*.out
+*.app
+*.apk
+*.msi
+*.msix
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+*.dmg
+!tools/**/*.exe
+!scripts/**/*.exe
+
+# FastHub portable dist
+dist/
+FastHub-win-*.zip
+FastHub-win-*.zip.sha256
+
+# ---------------------------------------------------------------------------
+# 4. IDEs & Editors
+# ---------------------------------------------------------------------------
+# Visual Studio
+.vs/
+*.vcxproj*
+*.vcxitems
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+*.vc.db
+*.VC.db
+ipch/
+*.aps
+*.ncb
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+.history/
+
+# JetBrains (CLion/Rider)
+.idea/
+*.iml
+cmake-build-*/
+
+# Other
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+*.kate-swp
+*.sublime-*
+
+# ---------------------------------------------------------------------------
+# 5. Qt Specific
+# ---------------------------------------------------------------------------
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+object_script.*.Release
+object_script.*.Debug
+*_qmlcache.qmlc
+*.qm
+# Qt Creator
+*.autosave
+
+# ---------------------------------------------------------------------------
+# 6. Package Managers
+# ---------------------------------------------------------------------------
+vcpkg_installed/
+vcpkg-manifest-install.log
+.nuget/
+packages/
+conan.lock
+conanbuildinfo.*
+conaninfo.txt
+graph_info.json
+
+# ---------------------------------------------------------------------------
+# 7. FastHub — Companion Apps & Large Binaries (NEVER commit)
+# ---------------------------------------------------------------------------
+# AyuGram is mere aggregation (GPL-3.0 stays with AyuGram). Keep source in
+# third_party/ayugram/src, but never commit built binaries or user data.
+third_party/ayugram/*.exe
+third_party/ayugram/*.pdb
+third_party/ayugram/*.ilk
+third_party/ayugram/tdata/
+third_party/ayugram/**/tdata/
+third_party/ayugram/**/D877F783D5D3EF8C/
+third_party/ayugram/**/ayudata.db
+third_party/ayugram/**/AyuGram-*.ico
+third_party/ayugram/**/FastHub-*.ico
+third_party/ayugram/build/
+third_party/ayugram/out/
+third_party/ayugram/Libraries/
+third_party/ayugram/ThirdParty/
+
+# Generic third_party binaries (keep sources, ignore builds)
+third_party/**/*.exe
+third_party/**/*.dll
+third_party/**/build/
+third_party/**/out/
+third_party/**/Libraries/
+
+# ---------------------------------------------------------------------------
+# 8. Database, Logs & Local Runtime Data
+# ---------------------------------------------------------------------------
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.crash
+*.dmp
+*.dump
+logs/
+log.txt
+app.log
+working
+tdata/
+D877F783D5D3EF8C/
+*_s/
+key_datas
+usertag
+settingss
+shortcuts*.json
+ayudata.db
+countries
+emoji/
+.ayu/
+
+# FastHub local app data (outside repo, but if copied in)
+FastHubTeam/
+*.fastHub
+
+# ---------------------------------------------------------------------------
+# 9. Secrets & Local Configuration (NEVER commit)
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+secrets.json
+config.local.json
+appsettings.local.json
+*secret*
+*credentials*
+*token*
+# OS secure storage dump
+secure_storage.json
+
+# ---------------------------------------------------------------------------
+# 10. OS Generated Files
+# ---------------------------------------------------------------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Linux
+*~
+
+# ---------------------------------------------------------------------------
+# 11. Temporary & Cache Files
+# ---------------------------------------------------------------------------
+*.tmp
+*.temp
+*.cache
+*.bak
+*.backup
+*.orig
+*.rej
+.cache/
+tmp/
+temp/
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# 12. Documentation Build
+# ---------------------------------------------------------------------------
+docs/_build/
+docs/html/
+docs/latex/
+site/
+.doctrees/
+
+# ---------------------------------------------------------------------------
+# 13. Private Docs — Local Only (never commit, stays on your machine)
+# ---------------------------------------------------------------------------
+VISION.md
+CONCEPT.md
+AGENTS.md
+CODESTYLE.md
+TODO.md
+
+# ---------------------------------------------------------------------------
+# 14. Keep these (negations)
+# ---------------------------------------------------------------------------
+!README.md
+!LICENSE
+!assets/**/*.png
+!assets/**/*.svg
+!assets/**/*.ico
+!assets/**/*.ttf
+!*.clang-format
+!*.editorconfig

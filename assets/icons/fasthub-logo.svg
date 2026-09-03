@@ -1,0 +1,19 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
+    <linearGradient id="white" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#C9CDD6"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#0B0E14"/>
+  <!-- white bolt (F silhouette) -->
+  <path d="M84 6 L26 74 L52 74 L38 122 L102 50 L70 50 L92 6 Z"
+        fill="url(#white)" stroke="#5B6170" stroke-width="1.5"/>
+  <!-- purple bolt (front) -->
+  <path d="M98 38 L54 96 L74 96 L62 124 L114 68 L88 68 L106 38 Z"
+        fill="url(#purple)"/>
+</svg>

@@ -1,0 +1,15 @@
+enable_testing()
+
+find_package(Qt6 REQUIRED COMPONENTS Test)
+
+add_subdirectory(core_tests)
+add_subdirectory(database_tests)
+add_subdirectory(search_tests)
+add_subdirectory(workspace_tests)
+add_subdirectory(sync_tests)
+add_subdirectory(theme_tests)
+add_subdirectory(qr_tests)
+add_subdirectory(markdown_tests)
+add_subdirectory(steam_tests)
+add_subdirectory(telegram_tests)
+add_subdirectory(canvas_tests)
