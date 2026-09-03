@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop">
+    <id>com.fasthub.telegram</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-3.0</project_license>
+    <name>FastHub_Telegram</name>
+    <summary>FastHub Telegram - Telegram client</summary>
+    <description>
+        <p>Telegram Desktop integrated in FastHub.</p>
+    </description>
+    <categories>
+        <category>Network</category>
+        <category>InstantMessaging</category>
+    </categories>
+    <update_contact>helpdesk_at_radolyn.com</update_contact>
+    <developer_name>FastHub</developer_name>
+    <url type="homepage">https://github.com/FastHub/FastHub</url>
+    <url type="faq">https://github.com/FastHub/FastHub</url>
+    <url type="bugtracker">https://github.com/FastHub/FastHub/issues</url>
+    <url type="translate">https://github.com/FastHub/FastHub</url>
+    <url type="vcs-browser">https://github.com/FastHub/FastHub</url>
+    <url type="contribute">https://github.com/FastHub/FastHub</url>
+    <screenshots>
+      <screenshot type="default">
+        <image>https://raw.githubusercontent.com/telegramdesktop/tdesktop/dev/docs/assets/preview.png</image>
+      </screenshot>
+    </screenshots>
+    <keywords>
+        <keyword>tg</keyword>
+        <keyword>telegram</keyword>
+        <keyword>tdesktop</keyword>
+        <keyword>messaging</keyword>
+        <keyword>messenger</keyword>
+        <keyword>chat</keyword>
+        <keyword>sms</keyword>
+        <keyword>im</keyword>
+        <keyword>fasthub</keyword>
+    </keywords>
+    <requires>
+        <display_length compare="ge">medium</display_length>
+        <internet>always</internet>
+    </requires>
+    <supports>
+        <control>pointing</control>
+        <control>keyboard</control>
+        <control>touch</control>
+    </supports>
+    <content_rating type="oars-1.1">
+        <content_attribute id="violence-cartoon">none</content_attribute>
+        <content_attribute id="violence-fantasy">none</content_attribute>
+        <content_attribute id="violence-realistic">none</content_attribute>
+        <content_attribute id="violence-bloodshed">none</content_attribute>
+        <content_attribute id="violence-sexual">none</content_attribute>
+        <content_attribute id="violence-desecration">none</content_attribute>
+        <content_attribute id="violence-slavery">none</content_attribute>
+        <content_attribute id="violence-worship">none</content_attribute>
+        <content_attribute id="drugs-alcohol">none</content_attribute>
+        <content_attribute id="drugs-narcotics">none</content_attribute>
+        <content_attribute id="drugs-tobacco">none</content_attribute>
+        <content_attribute id="sex-nudity">none</content_attribute>
+        <content_attribute id="sex-themes">none</content_attribute>
+        <content_attribute id="sex-homosexuality">none</content_attribute>
+        <content_attribute id="sex-prostitution">none</content_attribute>
+        <content_attribute id="sex-adultery">none</content_attribute>
+        <content_attribute id="sex-appearance">none</content_attribute>
+        <content_attribute id="language-profanity">none</content_attribute>
+        <content_attribute id="language-humor">none</content_attribute>
+        <content_attribute id="language-discrimination">none</content_attribute>
+        <content_attribute id="social-chat">intense</content_attribute>
+        <content_attribute id="social-info">none</content_attribute>
+        <content_attribute id="social-audio">intense</content_attribute>
+        <content_attribute id="social-location">none</content_attribute>
+        <content_attribute id="social-contacts">intense</content_attribute>
+        <content_attribute id="money-purchasing">intense</content_attribute>
+        <content_attribute id="money-gambling">none</content_attribute>
+        <content_attribute id="money-advertising">moderate</content_attribute>
+    </content_rating>
+    <launchable type="desktop-id">com.fasthub.telegram.desktop</launchable>
+    <provides>
+        <binary>FastHub_Telegram</binary>
+    </provides>
+</component>

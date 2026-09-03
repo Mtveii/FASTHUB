@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.fasthub.telegram
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/FastHub_Telegram

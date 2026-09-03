@@ -1,0 +1,22 @@
+[Desktop Entry]
+Name=FastHub_Telegram
+Comment=FastHub Telegram - Telegram client
+TryExec=FastHub_Telegram
+Exec=env DESKTOPINTEGRATION=1 FastHub_Telegram -- %U
+Icon=com.fasthub.telegram
+Terminal=false
+StartupWMClass=FastHub_Telegram
+Type=Application
+Categories=Chat;Network;InstantMessaging;Qt;
+MimeType=x-scheme-handler/tg;x-scheme-handler/tonsite;
+Keywords=tg;chat;im;messaging;messenger;sms;telegram;tdesktop;
+Actions=quit;
+DBusActivatable=true
+SingleMainWindow=true
+X-GNOME-UsesNotifications=true
+X-GNOME-SingleWindow=true
+
+[Desktop Action quit]
+Exec=FastHub_Telegram -quit
+Name=Quit FastHub_Telegram
+Icon=application-exit

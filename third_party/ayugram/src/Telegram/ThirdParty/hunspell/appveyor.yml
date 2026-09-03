@@ -1,0 +1,9 @@
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      MSYSTEM: MINGW64
+
+build_script:
+  - cmd: C:\msys64\usr\bin\bash -lc "cd $APPVEYOR_BUILD_FOLDER; autoreconf -vfi && CXXFLAGS='-Wall -Wextra -Werror' ./configure && make && make check"
+  - sh: cd $APPVEYOR_BUILD_FOLDER; autoreconf -vfi && CXXFLAGS='-Wall -Wextra -Werror' ./configure && make && make check
