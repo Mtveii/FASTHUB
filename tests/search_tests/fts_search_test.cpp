@@ -18,17 +18,16 @@ private:
     QTemporaryDir m_tempDir;
 };
 
-void FtsSearchTest::initTestCase()
-{
+void FtsSearchTest::initTestCase() {
     QVERIFY(m_tempDir.isValid());
-    QVERIFY(fasthub::database::DatabaseManager::instance().initialize(m_tempDir.filePath("search.sqlite")));
+    QVERIFY(fasthub::database::DatabaseManager::instance().initialize(
+        m_tempDir.filePath("search.sqlite")));
 
     QVERIFY(fasthub::database::DatabaseManager::instance().indexDocument(
         "test:doc1", "telegram", "Release notes", "FastHub release checklist body"));
 }
 
-void FtsSearchTest::findsIndexedDocument()
-{
+void FtsSearchTest::findsIndexedDocument() {
     SearchProvider provider;
     const auto hits = provider.search("release");
     QCOMPARE(hits.size(), 1);
@@ -36,8 +35,7 @@ void FtsSearchTest::findsIndexedDocument()
     QCOMPARE(hits.front().source, std::string("telegram"));
 }
 
-void FtsSearchTest::hostileQueryReturnsSafely()
-{
+void FtsSearchTest::hostileQueryReturnsSafely() {
     SearchProvider provider;
 
     // None of these may throw / crash; they are treated as plain text terms.

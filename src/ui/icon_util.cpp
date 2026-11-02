@@ -11,9 +11,7 @@
 // Q_INIT_RESOURCE must expand at the GLOBAL namespace scope, otherwise it
 // declares a new local symbol instead of referencing the qrc initializer
 // compiled into the static ui library.
-inline void initHubResources() {
-    Q_INIT_RESOURCE(resources);
-}
+inline void initHubResources() { Q_INIT_RESOURCE(resources); }
 
 namespace fasthub::ui {
 
@@ -33,7 +31,7 @@ QHash<QString, QIcon> &iconCache() {
     return instance;
 }
 
-QPixmap renderSvg(const QByteArray& svg, const QColor& color, int size) {
+QPixmap renderSvg(const QByteArray &svg, const QColor &color, int size) {
     QByteArray tinted = svg;
     if (color.isValid()) {
         tinted.replace("currentColor", color.name().toUtf8());
@@ -56,7 +54,7 @@ void IconUtil::loadBundledFonts() {
         QStringLiteral(":/fonts/Inter-Regular.ttf"),
         QStringLiteral(":/fonts/JetBrainsMono-Regular.ttf"),
     };
-    for (const QString& path : fontResources) {
+    for (const QString &path : fontResources) {
         const int id = QFontDatabase::addApplicationFont(path);
         if (id < 0) {
             infrastructure::Logger::instance().warn("UI", "Failed to load bundled font: " + path);
@@ -77,7 +75,8 @@ QPixmap IconUtil::logoPixmap(int size) {
                     // Square crop + smooth scale for non-square source (iCloud logo 1330x1182)
                     int s = qMin(pm.width(), pm.height());
                     QRect crop((pm.width() - s) / 2, (pm.height() - s) / 2, s, s);
-                    pm = pm.copy(crop).scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                    pm = pm.copy(crop).scaled(size, size, Qt::IgnoreAspectRatio,
+                                              Qt::SmoothTransformation);
                 }
                 return pm;
             }
@@ -99,9 +98,10 @@ QIcon IconUtil::logoIcon() {
     return icon;
 }
 
-QIcon IconUtil::tintedIcon(const QString& resourcePath, const QColor& color, int size) {
+QIcon IconUtil::tintedIcon(const QString &resourcePath, const QColor &color, int size) {
     ensureResources();
-    const QString key = resourcePath + QLatin1Char('@') + color.name() + QLatin1Char('@') + QString::number(size);
+    const QString key =
+        resourcePath + QLatin1Char('@') + color.name() + QLatin1Char('@') + QString::number(size);
     auto &c = iconCache();
     if (auto it = c.constFind(key); it != c.constEnd()) {
         return it.value();
@@ -117,8 +117,6 @@ QIcon IconUtil::tintedIcon(const QString& resourcePath, const QColor& color, int
     return icon;
 }
 
-void IconUtil::clearCache() {
-    iconCache().clear();
-}
+void IconUtil::clearCache() { iconCache().clear(); }
 
 } // namespace fasthub::ui

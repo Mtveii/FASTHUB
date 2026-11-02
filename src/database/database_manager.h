@@ -23,41 +23,43 @@ namespace fasthub::database {
 /// safe and wait-free for short reads.
 class DatabaseManager {
 public:
-    static DatabaseManager& instance();
+    static DatabaseManager &instance();
 
     /// @brief Opens the database and applies migrations. Idempotent.
     /// @param dbPath File path of the SQLite database.
     /// @return true on success (or if already initialized).
-    bool initialize(const QString& dbPath);
+    bool initialize(const QString &dbPath);
 
-    bool setSetting(const QString& key, const QString& value);
-    std::optional<QString> getSetting(const QString& key);
+    bool setSetting(const QString &key, const QString &value);
+    std::optional<QString> getSetting(const QString &key);
 
-    bool saveConversations(const std::vector<core::Conversation>& conversations);
+    bool saveConversations(const std::vector<core::Conversation> &conversations);
     std::vector<core::Conversation> getConversations();
 
     /// @brief Saves a message and indexes it into the FTS table atomically.
-    bool saveMessage(const core::Message& message, const std::string& source);
-    std::vector<core::Message> getMessages(const std::string& conversationId);
+    bool saveMessage(const core::Message &message, const std::string &source);
+    std::vector<core::Message> getMessages(const std::string &conversationId);
 
-    bool indexDocument(const std::string& internalId, const std::string& source, const std::string& title, const std::string& body);
+    bool indexDocument(const std::string &internalId, const std::string &source,
+                       const std::string &title, const std::string &body);
 
     /// @brief Full-text search. The user query is sanitized before MATCH,
     ///        so arbitrary FTS5 syntax / injection attempts are treated as
     ///        plain text terms instead of causing errors.
-    std::vector<core::SearchResult> searchFts(const std::string& query);
+    std::vector<core::SearchResult> searchFts(const std::string &query);
 
 private:
     DatabaseManager() = default;
     ~DatabaseManager() = default;
-    DatabaseManager(const DatabaseManager&) = delete;
-    DatabaseManager& operator=(const DatabaseManager&) = delete;
+    DatabaseManager(const DatabaseManager &) = delete;
+    DatabaseManager &operator=(const DatabaseManager &) = delete;
 
     /// @brief Returns (creating if needed) the caller-thread SQL connection.
     QSqlDatabase connectionForThread();
 
     bool runMigrations(QSqlDatabase db);
-    bool indexDocumentLocked(const std::string& internalId, const std::string& source, const std::string& title, const std::string& body);
+    bool indexDocumentLocked(const std::string &internalId, const std::string &source,
+                             const std::string &title, const std::string &body);
 
     void applyPragmas(QSqlDatabase db);
 

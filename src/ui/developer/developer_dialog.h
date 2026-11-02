@@ -10,7 +10,7 @@ namespace fasthub::ui {
 class DeveloperDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit DeveloperDialog(QWidget* parent = nullptr);
+    explicit DeveloperDialog(QWidget *parent = nullptr);
     ~DeveloperDialog() override = default;
 
 private slots:
@@ -19,8 +19,8 @@ private slots:
 private:
     void setupUi();
 
-    QComboBox* m_modeComboBox;
-    QLabel* m_metricsLabel;
+    QComboBox *m_modeComboBox;
+    QLabel *m_metricsLabel;
 };
 
 } // namespace fasthub::ui

@@ -12,7 +12,7 @@ namespace {
 constexpr int kMaxTitle = 64;
 
 struct EnumContext {
-    WindowTracker::Query* query = nullptr;
+    WindowTracker::Query *query = nullptr;
     // Per-call cache: pid -> image name matches the query. Avoids running
     // OpenProcess + QueryFullProcessImageNameW for the same pid on every
     // poll tick (300 ms).
@@ -20,8 +20,7 @@ struct EnumContext {
 };
 
 /// @brief Case-insensitive image-name check with per-call caching.
-bool matchesImageName(DWORD pid, const QString& imageName,
-                      QHash<DWORD, bool>& cache) {
+bool matchesImageName(DWORD pid, const QString &imageName, QHash<DWORD, bool> &cache) {
     if (imageName.isEmpty()) {
         return true; // No filter requested
     }
@@ -36,13 +35,11 @@ bool matchesImageName(DWORD pid, const QString& imageName,
         wchar_t imagePath[MAX_PATH] = {};
         DWORD size = MAX_PATH;
         if (QueryFullProcessImageNameW(process, 0, imagePath, &size)) {
-            const wchar_t* fileName = imagePath;
-            if (const wchar_t* slash = wcsrchr(imagePath, L'\\')) {
+            const wchar_t *fileName = imagePath;
+            if (const wchar_t *slash = wcsrchr(imagePath, L'\\')) {
                 fileName = slash + 1;
             }
-            match = imageName.compare(
-                        QString::fromWCharArray(fileName),
-                        Qt::CaseInsensitive) == 0;
+            match = imageName.compare(QString::fromWCharArray(fileName), Qt::CaseInsensitive) == 0;
         }
         CloseHandle(process);
     }
@@ -51,8 +48,8 @@ bool matchesImageName(DWORD pid, const QString& imageName,
 }
 
 BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam) {
-    auto* ctx = reinterpret_cast<EnumContext*>(lParam);
-    WindowTracker::Query& query = *ctx->query;
+    auto *ctx = reinterpret_cast<EnumContext *>(lParam);
+    WindowTracker::Query &query = *ctx->query;
 
     if (!query.allowHidden && !IsWindowVisible(hwnd)) {
         return TRUE;
@@ -86,7 +83,7 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam) {
 
 } // namespace
 
-HWND WindowTracker::findWindow(const Query& queryIn) {
+HWND WindowTracker::findWindow(const Query &queryIn) {
     Query query = queryIn; // Mutable copy: carries the result back.
     EnumContext ctx;
     ctx.query = &query;
@@ -100,21 +97,21 @@ bool WindowTracker::isWindowTitleReady(HWND hwnd) {
     return len > 0 && titleMatchesReadyState(title, static_cast<size_t>(len));
 }
 
-bool WindowTracker::titleMatchesReadyState(const wchar_t* title, size_t len) {
+bool WindowTracker::titleMatchesReadyState(const wchar_t *title, size_t len) {
     Q_UNUSED(len);
     // The initializing window still carries the placeholder title:
     // AyuGram used 'AyuGramDesktop', FastHub_Telegram should be
     // 'FastHub_TelegramDesktop' but the actual window shows 'FastHubDesktop'
     // (see tasklist pid 21796). Keep all variants.
-    const wchar_t* kInit1 = L"FastHub_TelegramDesktop";
-    const wchar_t* kInit2 = L"FastHubDesktop";
-    const wchar_t* kInitOld = L"AyuGramDesktop";
-    return wcsncmp(title, kInit1, wcslen(kInit1)) != 0
-        && wcsncmp(title, kInit2, wcslen(kInit2)) != 0
-        && wcsncmp(title, kInitOld, wcslen(kInitOld)) != 0;
+    const wchar_t *kInit1 = L"FastHub_TelegramDesktop";
+    const wchar_t *kInit2 = L"FastHubDesktop";
+    const wchar_t *kInitOld = L"AyuGramDesktop";
+    return wcsncmp(title, kInit1, wcslen(kInit1)) != 0 &&
+           wcsncmp(title, kInit2, wcslen(kInit2)) != 0 &&
+           wcsncmp(title, kInitOld, wcslen(kInitOld)) != 0;
 }
 
-bool WindowTracker::isProcessRunning(const QString& imageName) {
+bool WindowTracker::isProcessRunning(const QString &imageName) {
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snapshot == INVALID_HANDLE_VALUE) {
         return false;
@@ -124,8 +121,8 @@ bool WindowTracker::isProcessRunning(const QString& imageName) {
     bool found = false;
     if (Process32FirstW(snapshot, &entry)) {
         do {
-            if (imageName.compare(QString::fromWCharArray(entry.szExeFile),
-                                  Qt::CaseInsensitive) == 0) {
+            if (imageName.compare(QString::fromWCharArray(entry.szExeFile), Qt::CaseInsensitive) ==
+                0) {
                 found = true;
                 break;
             }

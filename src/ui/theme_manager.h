@@ -9,8 +9,8 @@ namespace fasthub::ui {
 
 /// @brief Single visual theme definition.
 struct ThemeInfo {
-    QString id;        ///< Stable identifier (e.g. "ocean-dark").
-    QString name;      ///< Human-readable display name.
+    QString id;   ///< Stable identifier (e.g. "ocean-dark").
+    QString name; ///< Human-readable display name.
     bool isDark = true;
     /// QSS color roles: bg, panel, text, muted, accent, accentHover, border.
     QHash<QString, QString> colors;
@@ -27,37 +27,37 @@ struct ThemeInfo {
 class ThemeManager : public QObject {
     Q_OBJECT
 public:
-    static ThemeManager& instance();
+    static ThemeManager &instance();
 
     /// @brief Loads custom themes from disk and the saved selection from DB.
     void initialize();
 
     /// @brief All themes available for display (built-in + custom).
-    const std::vector<ThemeInfo>& themes() const { return m_themes; }
+    const std::vector<ThemeInfo> &themes() const { return m_themes; }
 
     /// @brief Applies a theme by id (persists the choice).
     /// @return false if no such theme exists.
-    bool applyTheme(const QString& id);
+    bool applyTheme(const QString &id);
 
     /// @brief Currently applied theme id ("" = system default, no QSS).
     QString currentThemeId() const { return m_currentId; }
 
     /// @brief Adds a user theme and persists it to disk as JSON.
-    bool saveCustomTheme(const ThemeInfo& info);
+    bool saveCustomTheme(const ThemeInfo &info);
 
     /// @brief Deletes a user-defined theme by id (built-ins are protected).
-    bool removeCustomTheme(const QString& id);
+    bool removeCustomTheme(const QString &id);
 
 signals:
-    void themeApplied(const QString& id);
+    void themeApplied(const QString &id);
 
 private:
     ThemeManager() = default;
 
     void buildBuiltinThemes();
     void loadCustomThemes();
-    static bool loadThemeFromJson(const QString& path, ThemeInfo* out);
-    static bool writeThemeToJson(const QString& path, const ThemeInfo& info);
+    static bool loadThemeFromJson(const QString &path, ThemeInfo *out);
+    static bool writeThemeToJson(const QString &path, const ThemeInfo &info);
     QString customThemesDir() const;
 
     std::vector<ThemeInfo> m_themes;

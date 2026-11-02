@@ -8,12 +8,7 @@
 namespace fasthub::core {
 
 /// @brief Status of a provider module.
-enum class ProviderStatus {
-    Available,
-    Connecting,
-    Unavailable,
-    AuthenticationRequired
-};
+enum class ProviderStatus { Available, Connecting, Unavailable, AuthenticationRequired };
 
 /// @brief Abstract interface for chat-based providers (Telegram, Discord, Steam).
 class IChatProvider {
@@ -28,13 +23,13 @@ public:
 
     /// @brief Retrieves messages for a specific conversation.
     /// @param conversationId The unified conversation ID.
-    virtual std::vector<Message> getMessages(const std::string& conversationId) = 0;
+    virtual std::vector<Message> getMessages(const std::string &conversationId) = 0;
 
     /// @brief Sends a text message to a conversation.
     /// @param conversationId The unified conversation ID.
     /// @param text Message body.
     /// @return true if successfully sent/queued, false otherwise.
-    virtual bool sendMessage(const std::string& conversationId, const std::string& text) = 0;
+    virtual bool sendMessage(const std::string &conversationId, const std::string &text) = 0;
 };
 
 } // namespace fasthub::core

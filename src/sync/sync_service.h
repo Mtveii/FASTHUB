@@ -20,7 +20,7 @@ namespace fasthub::sync {
 class SyncService : public QObject {
     Q_OBJECT
 public:
-    explicit SyncService(std::shared_ptr<core::IChatProvider> provider, QObject* parent = nullptr);
+    explicit SyncService(std::shared_ptr<core::IChatProvider> provider, QObject *parent = nullptr);
     ~SyncService() override;
 
     void startSync(int intervalMs = 30000);

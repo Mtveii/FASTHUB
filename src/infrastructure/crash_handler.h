@@ -16,7 +16,7 @@ class CrashHandler {
 public:
     /// @brief Installs the handler. Safe to call multiple times.
     /// @param logDir Directory where crash.log / crash.dmp are written.
-    static void install(const QString& logDir);
+    static void install(const QString &logDir);
 };
 
 } // namespace fasthub::infrastructure

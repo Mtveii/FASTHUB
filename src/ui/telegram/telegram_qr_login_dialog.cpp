@@ -12,12 +12,13 @@
 
 namespace fasthub::ui {
 
-TelegramQrLoginDialog::TelegramQrLoginDialog(std::shared_ptr<providers::telegram::TelegramProvider> provider, QWidget* parent)
+TelegramQrLoginDialog::TelegramQrLoginDialog(
+    std::shared_ptr<providers::telegram::TelegramProvider> provider, QWidget *parent)
     : QDialog(parent), m_provider(provider) {
     setupUi();
 
-    connect(m_provider.get(), &providers::telegram::TelegramProvider::qrLoginStateChanged,
-            this, &TelegramQrLoginDialog::onStateChanged);
+    connect(m_provider.get(), &providers::telegram::TelegramProvider::qrLoginStateChanged, this,
+            &TelegramQrLoginDialog::onStateChanged);
 
     restartFlow();
 }
@@ -26,7 +27,7 @@ void TelegramQrLoginDialog::setupUi() {
     setWindowTitle("Telegram - Login via QR");
     resize(380, 480);
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
 
     m_qrLabel = new QLabel(this);
     m_qrLabel->setAlignment(Qt::AlignCenter);
@@ -49,22 +50,24 @@ void TelegramQrLoginDialog::setupUi() {
     layout->addWidget(m_apiHashEdit);
 
     m_saveCredentialsButton = new QPushButton("Save credentials and continue", this);
-    connect(m_saveCredentialsButton, &QPushButton::clicked, this, &TelegramQrLoginDialog::onSaveCredentials);
+    connect(m_saveCredentialsButton, &QPushButton::clicked, this,
+            &TelegramQrLoginDialog::onSaveCredentials);
     layout->addWidget(m_saveCredentialsButton);
 
     m_retryButton = new QPushButton("Retry QR login", this);
     connect(m_retryButton, &QPushButton::clicked, this, &TelegramQrLoginDialog::restartFlow);
     layout->addWidget(m_retryButton);
 
-    QHBoxLayout* bottom = new QHBoxLayout();
+    QHBoxLayout *bottom = new QHBoxLayout();
     bottom->addStretch();
-    QPushButton* close = new QPushButton("Close", this);
+    QPushButton *close = new QPushButton("Close", this);
     connect(close, &QPushButton::clicked, this, &QDialog::accept);
     bottom->addWidget(close);
     layout->addLayout(bottom);
 }
 
-void TelegramQrLoginDialog::onStateChanged(const QString& state, const QString& qrLink, const QString& details) {
+void TelegramQrLoginDialog::onStateChanged(const QString &state, const QString &qrLink,
+                                           const QString &details) {
     if (state == QStringLiteral("wait_qr") && !qrLink.isEmpty()) {
         // Real Telegram login link: scanning it in the official app authorizes
         // this exact TDLib session.
@@ -72,7 +75,8 @@ void TelegramQrLoginDialog::onStateChanged(const QString& state, const QString& 
         if (!qr.isNull()) {
             m_qrLabel->setPixmap(qr);
         }
-        m_statusLabel->setText("Open Telegram on your phone:\nSettings -> Devices -> Link Desktop Device\nand scan this code.");
+        m_statusLabel->setText("Open Telegram on your phone:\nSettings -> Devices -> Link Desktop "
+                               "Device\nand scan this code.");
     } else if (state == QStringLiteral("ready")) {
         m_qrLabel->clear();
         m_qrLabel->setText(u8"\u2714");

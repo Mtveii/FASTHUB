@@ -5,12 +5,10 @@
 #include "theme_manager.h"
 
 // Разворачивающаяся стрелка для узла папки: ▶ -> ▼
-class TreeChevronButton : public QToolButton
-{
+class TreeChevronButton : public QToolButton {
     Q_OBJECT
 public:
-    explicit TreeChevronButton(QWidget *parent = nullptr) : QToolButton(parent)
-    {
+    explicit TreeChevronButton(QWidget *parent = nullptr) : QToolButton(parent) {
         setIconSize({14, 14});
         setAutoRaise(true);
         setCheckable(true);
@@ -26,22 +24,19 @@ public:
     }
 
 public slots:
-    void updateTheme()
-    {
-        updateIconState(isChecked());
-    }
+    void updateTheme() { updateIconState(isChecked()); }
 
 private:
-    void updateIconState(bool expanded)
-    {
+    void updateIconState(bool expanded) {
         QColor color("#FFFFFF");
-        for (const auto& t : fasthub::ui::ThemeManager::instance().themes()) {
+        for (const auto &t : fasthub::ui::ThemeManager::instance().themes()) {
             if (t.id == fasthub::ui::ThemeManager::instance().currentThemeId()) {
                 color = QColor(t.isDark ? "#FFFFFF" : "#1A1A1A");
                 break;
             }
         }
-        const QString iconPath = expanded ? ":/icons/chevron-down.svg" : ":/icons/chevron-right.svg";
+        const QString iconPath =
+            expanded ? ":/icons/chevron-down.svg" : ":/icons/chevron-right.svg";
         setIcon(fasthub::ui::IconUtil::tintedIcon(iconPath, color, 14));
     }
 

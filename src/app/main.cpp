@@ -16,16 +16,17 @@
 
 namespace {
 
-constexpr const char* kSettingWorkspacePath = "workspace.path";
-constexpr const char* kSettingOnboardingDone = "onboarding.done";
+constexpr const char *kSettingWorkspacePath = "workspace.path";
+constexpr const char *kSettingOnboardingDone = "onboarding.done";
 
 /// @brief Returns the saved notes directory; runs first-run onboarding if
 ///        the user has not chosen one yet.
 QString resolveWorkspacePath() {
-    auto& db = fasthub::database::DatabaseManager::instance();
+    auto &db = fasthub::database::DatabaseManager::instance();
 
     QString path = db.getSetting(kSettingWorkspacePath).value_or(QString());
-    const bool onboardingDone = db.getSetting(kSettingOnboardingDone).value_or(QString()) == QStringLiteral("1");
+    const bool onboardingDone =
+        db.getSetting(kSettingOnboardingDone).value_or(QString()) == QStringLiteral("1");
 
     if (onboardingDone && !path.isEmpty()) {
         return path;
@@ -44,7 +45,7 @@ QString resolveWorkspacePath() {
 
 } // namespace
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setApplicationName("FastHub");
     app.setOrganizationName("FastHubTeam");

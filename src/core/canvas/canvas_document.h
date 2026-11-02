@@ -28,13 +28,14 @@ public:
     /// @param json UTF-8 JSON as per jsoncanvas.org/spec
     /// @param result out param with ok/error
     /// @return parsed document (may be empty on error)
-    static CanvasDocument parse(const QByteArray& json, CanvasParseResult* result = nullptr);
+    static CanvasDocument parse(const QByteArray &json, CanvasParseResult *result = nullptr);
 
     /// @brief Parse from file on disk. Resolves relative file-node paths against canvasFilePath.
-    static CanvasDocument parseFile(const QString& canvasFilePath, CanvasParseResult* result = nullptr);
+    static CanvasDocument parseFile(const QString &canvasFilePath,
+                                    CanvasParseResult *result = nullptr);
 
     /// @brief Resolve a file-node relative path against the .canvas location.
-    static QString resolveFilePath(const QString& canvasFilePath, const QString& nodeFilePath);
+    static QString resolveFilePath(const QString &canvasFilePath, const QString &nodeFilePath);
 
     /// @brief Serialize to JSON Canvas 1.0 bytes (UTF-8, pretty-printed).
     QByteArray toJson() const;

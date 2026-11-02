@@ -8,7 +8,8 @@
 
 namespace fasthub::ui {
 
-DiscordWidget::DiscordWidget(std::shared_ptr<providers::discord::DiscordProvider> discordProvider, QWidget* parent)
+DiscordWidget::DiscordWidget(std::shared_ptr<providers::discord::DiscordProvider> discordProvider,
+                             QWidget *parent)
     : QWidget(parent), m_discordProvider(discordProvider),
       m_oauthService(std::make_shared<providers::discord::DiscordOauthService>(this)) {
     setupUi();
@@ -16,7 +17,7 @@ DiscordWidget::DiscordWidget(std::shared_ptr<providers::discord::DiscordProvider
 }
 
 void DiscordWidget::setupUi() {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(new QLabel("Discord Guilds & Channels (Official API)", this));
 
     m_channelsListWidget = new QListWidget(this);
@@ -25,19 +26,22 @@ void DiscordWidget::setupUi() {
     // Official OAuth2 browser login. A phone-scanned QR handshake is part of
     // Discord's private client protocol and is intentionally NOT used
     // (project rules: official API only).
-    QPushButton* loginButton = new QPushButton("Login with Discord (browser OAuth2)", this);
+    QPushButton *loginButton = new QPushButton("Login with Discord (browser OAuth2)", this);
     loginButton->setToolTip("Official OAuth2 flow; token stored via DPAPI");
     connect(loginButton, &QPushButton::clicked, this, &DiscordWidget::onLoginClicked);
     layout->addWidget(loginButton);
 }
 
 void DiscordWidget::loadChannels() {
-    if (!m_discordProvider) return;
+    if (!m_discordProvider)
+        return;
 
     auto channels = m_discordProvider->getChannels();
     m_channelsListWidget->clear();
-    for (const auto& ch : channels) {
-        QString itemText = QString("%1 / #%2").arg(QString::fromStdString(ch.guildName), QString::fromStdString(ch.channelName));
+    for (const auto &ch : channels) {
+        QString itemText =
+            QString("%1 / #%2")
+                .arg(QString::fromStdString(ch.guildName), QString::fromStdString(ch.channelName));
         m_channelsListWidget->addItem(itemText);
     }
 }

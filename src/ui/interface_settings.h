@@ -12,7 +12,7 @@ namespace fasthub::ui {
 class InterfaceSettings : public QObject {
     Q_OBJECT
 public:
-    static InterfaceSettings& instance();
+    static InterfaceSettings &instance();
 
     /// @brief Loads persisted values from the settings table.
     void initialize();
@@ -36,7 +36,7 @@ public:
     void setAutoSaveDelayMs(int ms);
 
     QString editorFontFamily() const { return m_editorFont; }
-    void setEditorFontFamily(const QString& family);
+    void setEditorFontFamily(const QString &family);
 
     bool ayuAutoLaunch() const { return m_ayuAutoLaunch; }
     void setAyuAutoLaunch(bool on);
@@ -53,7 +53,7 @@ signals:
     void treePanelWidthChanged(int px);
     void treeSingleClickChanged(bool on);
     void autoSaveDelayChanged(int ms);
-    void editorFontChanged(const QString& family);
+    void editorFontChanged(const QString &family);
     void webZoomChanged(int pct);
 
 private:

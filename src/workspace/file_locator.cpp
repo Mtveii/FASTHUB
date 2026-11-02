@@ -9,12 +9,12 @@ namespace fasthub::workspace {
 
 namespace {
 
-bool namesEqual(const QString& a, const QString& b) {
+bool namesEqual(const QString &a, const QString &b) {
     return QString::compare(a, b, Qt::CaseInsensitive) == 0;
 }
 
 /// @brief Walks @p rootPath once, scoring candidates for @p target.
-QString searchRoot(const QString& rootPath, const QString& target) {
+QString searchRoot(const QString &rootPath, const QString &target) {
     const QFileInfo targetInfo(target);
     const QString targetFullName = targetInfo.fileName();
     const QString targetBaseName = targetInfo.completeBaseName();
@@ -36,19 +36,22 @@ QString searchRoot(const QString& rootPath, const QString& target) {
             baseMatch = candidate;
             continue;
         }
-        if (mdMatch.isEmpty() && namesEqual(info.fileName(), targetFullName + QStringLiteral(".md"))) {
+        if (mdMatch.isEmpty() &&
+            namesEqual(info.fileName(), targetFullName + QStringLiteral(".md"))) {
             mdMatch = candidate;
         }
     }
 
-    if (!exactMatch.isEmpty()) return exactMatch;
-    if (!baseMatch.isEmpty()) return baseMatch;
+    if (!exactMatch.isEmpty())
+        return exactMatch;
+    if (!baseMatch.isEmpty())
+        return baseMatch;
     return mdMatch;
 }
 
 } // namespace
 
-QString FileLocator::findFileByName(const QString& rootPath, const QString& name) {
+QString FileLocator::findFileByName(const QString &rootPath, const QString &name) {
     if (rootPath.isEmpty() || name.isEmpty()) {
         return {};
     }
@@ -63,7 +66,7 @@ QString FileLocator::findFileByName(const QString& rootPath, const QString& name
     return searchRoot(cleaned, name.trimmed());
 }
 
-QString FileLocator::createIfMissing(const QString& rootPath, const QString& name) {
+QString FileLocator::createIfMissing(const QString &rootPath, const QString &name) {
     const QString existing = findFileByName(rootPath, name);
     if (!existing.isEmpty()) {
         return existing;

@@ -20,17 +20,17 @@ namespace fasthub::providers::discord {
 class DiscordOauthService : public QObject {
     Q_OBJECT
 public:
-    explicit DiscordOauthService(QObject* parent = nullptr);
+    explicit DiscordOauthService(QObject *parent = nullptr);
 
     static constexpr quint16 kCallbackPort = 8976;
-    static constexpr const char* kRedirectUri = "http://127.0.0.1:8976/callback";
-    static constexpr const char* kScope = "identify guilds";
+    static constexpr const char *kRedirectUri = "http://127.0.0.1:8976/callback";
+    static constexpr const char *kScope = "identify guilds";
 
     /// @brief true if client_id/client_secret are stored.
     bool hasCredentials() const;
 
     /// @brief Persists application credentials via ISecureStorage.
-    void saveAppCredentials(const QString& clientId, const QString& clientSecret);
+    void saveAppCredentials(const QString &clientId, const QString &clientSecret);
 
 public slots:
     /// @brief Starts the browser + loopback-listener flow.
@@ -44,11 +44,11 @@ signals:
     void loginStateChanged(QString step, QString details);
 
 private:
-    void exchangeCodeForToken(const QString& code);
+    void exchangeCodeForToken(const QString &code);
     void finishListener();
 
     QTcpServer m_listener;
-    QNetworkAccessManager* m_http = nullptr;
+    QNetworkAccessManager *m_http = nullptr;
 };
 
 } // namespace fasthub::providers::discord

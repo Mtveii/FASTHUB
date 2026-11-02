@@ -5,31 +5,25 @@
 
 namespace fasthub::infrastructure {
 
-enum class LogLevel {
-    Debug,
-    Info,
-    Warning,
-    Error,
-    Fatal
-};
+enum class LogLevel { Debug, Info, Warning, Error, Fatal };
 
 class Logger {
 public:
-    static Logger& instance();
+    static Logger &instance();
 
-    void init(const QString& logFilePath);
-    void log(LogLevel level, const QString& category, const QString& message);
+    void init(const QString &logFilePath);
+    void log(LogLevel level, const QString &category, const QString &message);
 
-    void debug(const QString& category, const QString& message);
-    void info(const QString& category, const QString& message);
-    void warn(const QString& category, const QString& message);
-    void error(const QString& category, const QString& message);
+    void debug(const QString &category, const QString &message);
+    void info(const QString &category, const QString &message);
+    void warn(const QString &category, const QString &message);
+    void error(const QString &category, const QString &message);
 
 private:
     Logger() = default;
     ~Logger() = default;
-    Logger(const Logger&) = delete;
-    Logger& operator=(const Logger&) = delete;
+    Logger(const Logger &) = delete;
+    Logger &operator=(const Logger &) = delete;
 
     void rotateIfNeeded();
 

@@ -23,7 +23,8 @@ private slots:
 };
 
 void CanvasDocumentTest::minimalCanvas() {
-    QByteArray json = R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"text":"hello"}],"edges":[]})";
+    QByteArray json =
+        R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"text":"hello"}],"edges":[]})";
     CanvasParseResult r;
     auto doc = CanvasDocument::parse(json, &r);
     QVERIFY(r.ok);
@@ -89,7 +90,8 @@ void CanvasDocumentTest::malformedJson() {
 }
 
 void CanvasDocumentTest::missingOptionalFields() {
-    QByteArray json = R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100}],"edges":[{"id":"e1","fromNode":"n1","toNode":"n1"}]})";
+    QByteArray json =
+        R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100}],"edges":[{"id":"e1","fromNode":"n1","toNode":"n1"}]})";
     CanvasParseResult r;
     auto doc = CanvasDocument::parse(json, &r);
     QVERIFY(r.ok);
@@ -99,7 +101,10 @@ void CanvasDocumentTest::missingOptionalFields() {
 }
 
 void CanvasDocumentTest::unicodeText() {
-    QByteArray json = QString(R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":200,"height":100,"text":"Привет 🌟 مرحبا"}]})").toUtf8();
+    QByteArray json =
+        QString(
+            R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":200,"height":100,"text":"Привет 🌟 مرحبا"}]})")
+            .toUtf8();
     CanvasParseResult r;
     auto doc = CanvasDocument::parse(json, &r);
     QVERIFY(r.ok);
@@ -113,13 +118,16 @@ void CanvasDocumentTest::unicodeText() {
 void CanvasDocumentTest::filePathResolve() {
     QString canvasPath = "C:/vault/folder/board.canvas";
     // relative with /
-    QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "notes/todo.md"), QString("C:/vault/folder/notes/todo.md"));
+    QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "notes/todo.md"),
+             QString("C:/vault/folder/notes/todo.md"));
     // relative with \
     QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "notes\\todo.md"), QString("C:/vault/folder/notes/todo.md"));
     // absolute
-    QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "C:/other/file.md"), QString("C:/other/file.md"));
+    QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "C:/other/file.md"),
+             QString("C:/other/file.md"));
     // dot segment
-    QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "../other.md"), QString("C:/vault/other.md"));
+    QCOMPARE(CanvasDocument::resolveFilePath(canvasPath, "../other.md"),
+             QString("C:/vault/other.md"));
 }
 
 void CanvasDocumentTest::emptyCanvas() {
@@ -137,7 +145,8 @@ void CanvasDocumentTest::emptyCanvas() {
 }
 
 void CanvasDocumentTest::unknownFieldsDropped() {
-    QByteArray json = R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"unknownField":"keep","another":123}],"edges":[],"futureField":"ignore"})";
+    QByteArray json =
+        R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"unknownField":"keep","another":123}],"edges":[],"futureField":"ignore"})";
     CanvasParseResult r;
     auto doc = CanvasDocument::parse(json, &r);
     QVERIFY(r.ok);
@@ -152,7 +161,11 @@ void CanvasDocumentTest::presetColors() {
         {"4", QColor("#5DB300")}, {"5", QColor("#4472E0")}, {"6", QColor("#9A5CF0")},
     };
     for (auto it = expected.begin(); it != expected.end(); ++it) {
-        QByteArray json = QString(R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"color":"%1"}]})").arg(it.key()).toUtf8();
+        QByteArray json =
+            QString(
+                R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"color":"%1"}]})")
+                .arg(it.key())
+                .toUtf8();
         auto doc = CanvasDocument::parse(json);
         QVERIFY(doc.nodes[0].color().isValid());
         QCOMPARE(doc.nodes[0].color().name().toUpper(), it.value().name().toUpper());
@@ -160,17 +173,24 @@ void CanvasDocumentTest::presetColors() {
         QVERIFY(doc.nodes[0].color() != QColor("#000001"));
     }
     // Hex цвета парсятся напрямую
-    QCOMPARE(CanvasDocument::parse(R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"color":"#FF00AA"}]})").nodes[0].color(), QColor("#FF00AA"));
+    QCOMPARE(
+        CanvasDocument::parse(
+            R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"color":"#FF00AA"}]})")
+            .nodes[0]
+            .color(),
+        QColor("#FF00AA"));
 }
 
 void CanvasDocumentTest::hexColors() {
-    QByteArray json = R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"color":"#FF00AA"}]})";
+    QByteArray json =
+        R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100,"color":"#FF00AA"}]})";
     auto doc = CanvasDocument::parse(json);
     QCOMPARE(doc.nodes[0].color(), QColor("#FF00AA"));
 }
 
 void CanvasDocumentTest::missingGeometrySkipped() {
-    QByteArray json = R"({"nodes":[{"id":"bad","type":"text","text":"no geometry"},{"id":"good","type":"text","x":0,"y":0,"width":100,"height":100}],"edges":[]})";
+    QByteArray json =
+        R"({"nodes":[{"id":"bad","type":"text","text":"no geometry"},{"id":"good","type":"text","x":0,"y":0,"width":100,"height":100}],"edges":[]})";
     CanvasParseResult r;
     auto doc = CanvasDocument::parse(json, &r);
     QVERIFY(r.ok);
@@ -179,9 +199,11 @@ void CanvasDocumentTest::missingGeometrySkipped() {
 }
 
 void CanvasDocumentTest::bomHandling() {
-    QByteArray json = QByteArray("\xEF\xBB\xBF") + R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100}]})";
-    // parseFile handles BOM; parse() with BOM should also be tolerant via fromJson (it handles BOM? but we test)
-    // For direct parse, strip manually as parseFile does — here we test parseFile path
+    QByteArray json =
+        QByteArray("\xEF\xBB\xBF") +
+        R"({"nodes":[{"id":"n1","type":"text","x":0,"y":0,"width":100,"height":100}]})";
+    // parseFile handles BOM; parse() with BOM should also be tolerant via fromJson (it handles BOM?
+    // but we test) For direct parse, strip manually as parseFile does — here we test parseFile path
     // Write temp file
     QString tmp = QDir::temp().filePath("test_bom.canvas");
     QFile f(tmp);
@@ -198,13 +220,23 @@ void CanvasDocumentTest::bomHandling() {
 void CanvasDocumentTest::largeFileDoesNotHang() {
     // Synthesize 500 nodes
     QJsonArray nodes;
-    for (int i=0;i<500;++i) {
-        QJsonObject o; o["id"]=QString("n%1").arg(i); o["type"]="text"; o["x"]=i*10; o["y"]=0; o["width"]=100; o["height"]=50; o["text"]=QString("node %1").arg(i);
+    for (int i = 0; i < 500; ++i) {
+        QJsonObject o;
+        o["id"] = QString("n%1").arg(i);
+        o["type"] = "text";
+        o["x"] = i * 10;
+        o["y"] = 0;
+        o["width"] = 100;
+        o["height"] = 50;
+        o["text"] = QString("node %1").arg(i);
         nodes.append(o);
     }
-    QJsonObject root; root["nodes"]=nodes; root["edges"]=QJsonArray();
+    QJsonObject root;
+    root["nodes"] = nodes;
+    root["edges"] = QJsonArray();
     QByteArray json = QJsonDocument(root).toJson();
-    QElapsedTimer t; t.start();
+    QElapsedTimer t;
+    t.start();
     auto doc = CanvasDocument::parse(json);
     qint64 elapsed = t.elapsed();
     QVERIFY(doc.nodes.size() == 500);

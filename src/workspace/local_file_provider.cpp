@@ -14,10 +14,11 @@ namespace {
 constexpr qint64 kMaxReadFileBytes = 20 * 1024 * 1024; // 20 MB guard for the text reader.
 }
 
-bool LocalFileProvider::setRootPath(const std::string& rootPath) {
+bool LocalFileProvider::setRootPath(const std::string &rootPath) {
     QString cleaned = QDir::cleanPath(QString::fromStdString(rootPath));
     if (cleaned.isEmpty() || !QDir(cleaned).exists()) {
-        infrastructure::Logger::instance().error("Workspace", "Rejected workspace root (missing or invalid): " + cleaned);
+        infrastructure::Logger::instance().error(
+            "Workspace", "Rejected workspace root (missing or invalid): " + cleaned);
         return false;
     }
     m_rootPath = cleaned.toStdString();
@@ -25,11 +26,11 @@ bool LocalFileProvider::setRootPath(const std::string& rootPath) {
     return true;
 }
 
-QString LocalFileProvider::normalizedAbsolute(const std::string& path) const {
+QString LocalFileProvider::normalizedAbsolute(const std::string &path) const {
     return QDir::cleanPath(QDir::fromNativeSeparators(QString::fromStdString(path)));
 }
 
-bool LocalFileProvider::containsNormalized(const QString& candidate) const {
+bool LocalFileProvider::containsNormalized(const QString &candidate) const {
     if (m_rootPath.empty()) {
         return false; // No root configured -> everything is rejected.
     }
@@ -41,16 +42,17 @@ bool LocalFileProvider::containsNormalized(const QString& candidate) const {
     return candidate.startsWith(prefix, Qt::CaseInsensitive);
 }
 
-bool LocalFileProvider::isInsideRoot(const std::string& path) const {
+bool LocalFileProvider::isInsideRoot(const std::string &path) const {
     return containsNormalized(normalizedAbsolute(path));
 }
 
-std::vector<core::FileInfo> LocalFileProvider::listDirectory(const std::string& path) {
+std::vector<core::FileInfo> LocalFileProvider::listDirectory(const std::string &path) {
     std::vector<core::FileInfo> result;
 
     QString qPath = normalizedAbsolute(path);
     if (!containsNormalized(qPath)) {
-        infrastructure::Logger::instance().warn("Workspace", "listDirectory rejected (outside workspace): " + qPath);
+        infrastructure::Logger::instance().warn(
+            "Workspace", "listDirectory rejected (outside workspace): " + qPath);
         return result;
     }
 
@@ -59,8 +61,9 @@ std::vector<core::FileInfo> LocalFileProvider::listDirectory(const std::string& 
         return result;
     }
 
-    QFileInfoList list = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
-    for (const QFileInfo& info : list) {
+    QFileInfoList list =
+        dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
+    for (const QFileInfo &info : list) {
         core::FileInfo item;
         item.path = info.absoluteFilePath().toStdString();
         item.name = info.fileName().toStdString();
@@ -72,10 +75,11 @@ std::vector<core::FileInfo> LocalFileProvider::listDirectory(const std::string& 
     return result;
 }
 
-std::optional<std::string> LocalFileProvider::readFile(const std::string& path) {
+std::optional<std::string> LocalFileProvider::readFile(const std::string &path) {
     QString qPath = normalizedAbsolute(path);
     if (!containsNormalized(qPath)) {
-        infrastructure::Logger::instance().warn("Workspace", "readFile rejected (outside workspace): " + qPath);
+        infrastructure::Logger::instance().warn("Workspace",
+                                                "readFile rejected (outside workspace): " + qPath);
         return std::nullopt;
     }
 
@@ -85,8 +89,10 @@ std::optional<std::string> LocalFileProvider::readFile(const std::string& path) 
     }
     // Guard after hydration: cloud files report 0 before open, real size after.
     if (file.size() > kMaxReadFileBytes) {
-        infrastructure::Logger::instance().warn("Workspace", QString("readFile rejected, file too large (%1 bytes): %2")
-            .arg(file.size()).arg(qPath));
+        infrastructure::Logger::instance().warn(
+            "Workspace", QString("readFile rejected, file too large (%1 bytes): %2")
+                             .arg(file.size())
+                             .arg(qPath));
         return std::nullopt;
     }
 
@@ -96,10 +102,11 @@ std::optional<std::string> LocalFileProvider::readFile(const std::string& path) 
     return content.toStdString();
 }
 
-bool LocalFileProvider::writeFile(const std::string& path, const std::string& content) {
+bool LocalFileProvider::writeFile(const std::string &path, const std::string &content) {
     QString qPath = normalizedAbsolute(path);
     if (!containsNormalized(qPath)) {
-        infrastructure::Logger::instance().warn("Workspace", "writeFile rejected (outside workspace): " + qPath);
+        infrastructure::Logger::instance().warn("Workspace",
+                                                "writeFile rejected (outside workspace): " + qPath);
         return false;
     }
 
@@ -112,7 +119,9 @@ bool LocalFileProvider::writeFile(const std::string& path, const std::string& co
     // and avoids 0-byte truncation if app crashes mid-write.
     QSaveFile file(qPath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        infrastructure::Logger::instance().error("Workspace", "Failed to open file for writing: " + qPath + " error: " + file.errorString());
+        infrastructure::Logger::instance().error("Workspace",
+                                                 "Failed to open file for writing: " + qPath +
+                                                     " error: " + file.errorString());
         return false;
     }
 
@@ -122,20 +131,24 @@ bool LocalFileProvider::writeFile(const std::string& path, const std::string& co
     out << QString::fromStdString(content);
     out.flush();
     if (out.status() != QTextStream::Ok) {
-        infrastructure::Logger::instance().error("Workspace", "QTextStream write failed for: " + qPath);
+        infrastructure::Logger::instance().error("Workspace",
+                                                 "QTextStream write failed for: " + qPath);
         return false;
     }
     if (!file.commit()) {
-        infrastructure::Logger::instance().error("Workspace", "Failed to commit file (QSaveFile): " + qPath + " error: " + file.errorString());
+        infrastructure::Logger::instance().error("Workspace",
+                                                 "Failed to commit file (QSaveFile): " + qPath +
+                                                     " error: " + file.errorString());
         return false;
     }
     return true;
 }
 
-bool LocalFileProvider::createFile(const std::string& path, bool isDirectory) {
+bool LocalFileProvider::createFile(const std::string &path, bool isDirectory) {
     QString qPath = normalizedAbsolute(path);
     if (!containsNormalized(qPath)) {
-        infrastructure::Logger::instance().warn("Workspace", "createFile rejected (outside workspace): " + qPath);
+        infrastructure::Logger::instance().warn(
+            "Workspace", "createFile rejected (outside workspace): " + qPath);
         return false;
     }
 
@@ -160,16 +173,19 @@ bool LocalFileProvider::createFile(const std::string& path, bool isDirectory) {
     }
 }
 
-bool LocalFileProvider::deleteFile(const std::string& path) {
+bool LocalFileProvider::deleteFile(const std::string &path) {
     QString qPath = normalizedAbsolute(path);
     if (!containsNormalized(qPath)) {
-        infrastructure::Logger::instance().warn("Workspace", "deleteFile rejected (outside workspace): " + qPath);
+        infrastructure::Logger::instance().warn(
+            "Workspace", "deleteFile rejected (outside workspace): " + qPath);
         return false;
     }
 
     // Never allow deleting the workspace root itself through this API.
-    if (qPath.compare(QDir::cleanPath(QString::fromStdString(m_rootPath)), Qt::CaseInsensitive) == 0) {
-        infrastructure::Logger::instance().warn("Workspace", "Refusing to delete the workspace root itself: " + qPath);
+    if (qPath.compare(QDir::cleanPath(QString::fromStdString(m_rootPath)), Qt::CaseInsensitive) ==
+        0) {
+        infrastructure::Logger::instance().warn(
+            "Workspace", "Refusing to delete the workspace root itself: " + qPath);
         return false;
     }
 
@@ -181,17 +197,19 @@ bool LocalFileProvider::deleteFile(const std::string& path) {
     }
 }
 
-bool LocalFileProvider::renameFile(const std::string& oldPath, const std::string& newPath) {
+bool LocalFileProvider::renameFile(const std::string &oldPath, const std::string &newPath) {
     QString qOld = normalizedAbsolute(oldPath);
     QString qNew = normalizedAbsolute(newPath);
 
     if (!containsNormalized(qOld) || !containsNormalized(qNew)) {
-        infrastructure::Logger::instance().warn("Workspace", QString("rename rejected (outside workspace): %1 -> %2").arg(qOld, qNew));
+        infrastructure::Logger::instance().warn(
+            "Workspace", QString("rename rejected (outside workspace): %1 -> %2").arg(qOld, qNew));
         return false;
     }
 
     if (!QFile::rename(qOld, qNew)) {
-        infrastructure::Logger::instance().error("Workspace", QString("rename failed: %1 -> %2").arg(qOld, qNew));
+        infrastructure::Logger::instance().error(
+            "Workspace", QString("rename failed: %1 -> %2").arg(qOld, qNew));
         return false;
     }
     return true;

@@ -29,11 +29,11 @@ constexpr int kSimTickMs = 16;
 constexpr qreal kMinAlpha = 0.005;
 
 // Physics tuning (px units).
-constexpr qreal kRepulsion = 90000.0;   // Coulomb-like constant
-constexpr qreal kSpringLength = 150.0;  // Rest length of a link
+constexpr qreal kRepulsion = 90000.0;  // Coulomb-like constant
+constexpr qreal kSpringLength = 150.0; // Rest length of a link
 constexpr qreal kSpringStiffness = 0.02;
 constexpr qreal kGravity = 0.015;
-constexpr qreal kMaxStep = 25.0;        // Per-tick position clamp
+constexpr qreal kMaxStep = 25.0; // Per-tick position clamp
 
 // Palette (matches the FastHub dark workspace theme).
 const QColor kBackgroundColor(0x1B, 0x1E, 0x27);
@@ -48,7 +48,7 @@ const QColor kTextColor(0xE8, 0xEA, 0xF2);
 
 NoteNodeItem::NoteNodeItem(QString name, int index, float radius)
     : m_name(std::move(name)), m_index(index), m_radius(radius) {
-    setFlag(QGraphicsItem::ItemIsMovable);       // scene handles dragging
+    setFlag(QGraphicsItem::ItemIsMovable); // scene handles dragging
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
     setZValue(1.0);
@@ -66,9 +66,8 @@ QRectF NoteNodeItem::boundingRect() const {
     return QRectF(-w / 2.0, -m_radius, w, m_radius * 2.0 + labelH);
 }
 
-void NoteNodeItem::paint(QPainter* painter,
-                         const QStyleOptionGraphicsItem* option,
-                         QWidget* widget) {
+void NoteNodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                         QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -85,40 +84,37 @@ void NoteNodeItem::paint(QPainter* painter,
     const QFontMetrics fm(f);
     const int labelH = fm.height();
     const QRectF bounds = boundingRect();
-    painter->drawText(QRectF(bounds.left(), bounds.bottom() - labelH,
-                             bounds.width(), labelH),
+    painter->drawText(QRectF(bounds.left(), bounds.bottom() - labelH, bounds.width(), labelH),
                       Qt::AlignHCenter | Qt::AlignVCenter, m_name);
 }
 
-void NoteNodeItem::addIncidentEdge(QGraphicsLineItem* line, bool isStart) {
+void NoteNodeItem::addIncidentEdge(QGraphicsLineItem *line, bool isStart) {
     m_incidentEdges.append({line, isStart});
 }
 
-void NoteNodeItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+void NoteNodeItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     m_pressPos = event->scenePos();
     setZValue(1000.0);
     setCursor(Qt::ClosedHandCursor);
     QGraphicsObject::mousePressEvent(event);
 }
 
-void NoteNodeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
+void NoteNodeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     setZValue(1.0);
     unsetCursor();
     QGraphicsObject::mouseReleaseEvent(event);
-    if ((event->scenePos() - m_pressPos).manhattanLength() <
-        QApplication::startDragDistance()) {
+    if ((event->scenePos() - m_pressPos).manhattanLength() < QApplication::startDragDistance()) {
         emit clicked(m_index);
     } else {
         emit positionDropped();
     }
 }
 
-QVariant NoteNodeItem::itemChange(GraphicsItemChange change,
-                                  const QVariant& value) {
+QVariant NoteNodeItem::itemChange(GraphicsItemChange change, const QVariant &value) {
     if (change == QGraphicsItem::ItemPositionHasChanged) {
         const QPointF newPos = value.toPointF();
-        for (const auto& p : m_incidentEdges) {
-            QGraphicsLineItem* line = p.first;
+        for (const auto &p : m_incidentEdges) {
+            QGraphicsLineItem *line = p.first;
             QLineF l = line->line();
             if (p.second) {
                 l.setP1(newPos);
@@ -135,8 +131,8 @@ QVariant NoteNodeItem::itemChange(GraphicsItemChange change,
 
 // ---------------------------------------------------------------- view ---
 
-GraphView::GraphView(QWidget* parent) : QGraphicsView(parent) {
-    auto* sceneObj = new QGraphicsScene(this);
+GraphView::GraphView(QWidget *parent) : QGraphicsView(parent) {
+    auto *sceneObj = new QGraphicsScene(this);
     setScene(sceneObj);
     setRenderHint(QPainter::Antialiasing);
     setBackgroundBrush(kBackgroundColor);
@@ -146,16 +142,15 @@ GraphView::GraphView(QWidget* parent) : QGraphicsView(parent) {
     connect(&m_simTimer, &QTimer::timeout, this, &GraphView::simulationTick);
 }
 
-GraphView::~GraphView() {
-    saveGraphCache();
-}
+GraphView::~GraphView() { saveGraphCache(); }
 
 void GraphView::saveGraphCache() {
-    if (m_root.isEmpty() || m_nodes.isEmpty()) return;
+    if (m_root.isEmpty() || m_nodes.isEmpty())
+        return;
     QDir().mkpath(m_root + "/.fasthub");
     const QString cachePath = m_root + "/.fasthub/graph_cache.json";
     QJsonObject obj;
-    for (const auto& node : m_nodes) {
+    for (const auto &node : m_nodes) {
         QJsonObject val;
         val["x"] = node.pos.x();
         val["y"] = node.pos.y();
@@ -169,14 +164,14 @@ void GraphView::saveGraphCache() {
     }
 }
 
-void GraphView::setWorkspaceRoot(const QString& root) {
+void GraphView::setWorkspaceRoot(const QString &root) {
     m_root = root;
     clearGraph();
     if (root.isEmpty() || !QDir(root).exists()) {
         return;
     }
 
-    auto* loadingText = scene()->addText(QStringLiteral("Calculating graph layout..."));
+    auto *loadingText = scene()->addText(QStringLiteral("Calculating graph layout..."));
     loadingText->setDefaultTextColor(kTextColor);
 
     QFuture<void> future = QtConcurrent::run([this, root]() {
@@ -203,12 +198,10 @@ void GraphView::setWorkspaceRoot(const QString& root) {
         QHash<QString, int> byName;
         byName.reserve(64);
 
-        QDirIterator it(root,
-                        {QStringLiteral("*.md"), QStringLiteral("*.markdown")},
-                        QDir::Files, QDirIterator::Subdirectories);
+        QDirIterator it(root, {QStringLiteral("*.md"), QStringLiteral("*.markdown")}, QDir::Files,
+                        QDirIterator::Subdirectories);
         int scanned = 0;
-        while (it.hasNext() && scanned < kMaxFilesScanned &&
-               nodes.size() < kMaxNodes) {
+        while (it.hasNext() && scanned < kMaxFilesScanned && nodes.size() < kMaxNodes) {
             const QString path = it.next();
             ++scanned;
             const QString rel = QDir(root).relativeFilePath(path);
@@ -235,8 +228,7 @@ void GraphView::setWorkspaceRoot(const QString& root) {
             nodes.append(node);
         }
 
-        static const QRegularExpression linkPattern(
-            QStringLiteral("\\[\\[([^\\]\\|#]+)"));
+        static const QRegularExpression linkPattern(QStringLiteral("\\[\\[([^\\]\\|#]+)"));
         for (int i = 0; i < nodes.size(); ++i) {
             QFile file(nodes[i].path);
             if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -264,21 +256,26 @@ void GraphView::setWorkspaceRoot(const QString& root) {
             nodes[i].pos = QPointF(r * std::cos(angle), r * std::sin(angle));
         }
 
-        QMetaObject::invokeMethod(this, [this, root, nodes, edges]() {
-            if (m_root != root) return;
-            if (scene()) scene()->clear();
-            m_nodes = nodes;
-            m_edges = edges;
+        QMetaObject::invokeMethod(
+            this,
+            [this, root, nodes, edges]() {
+                if (m_root != root)
+                    return;
+                if (scene())
+                    scene()->clear();
+                m_nodes = nodes;
+                m_edges = edges;
 
-            if (m_nodes.isEmpty()) {
-                auto* placeholder = scene()->addText(
-                    QStringLiteral("No Markdown notes in this workspace."));
-                placeholder->setDefaultTextColor(kTextColor);
-                return;
-            }
-            buildScene();
-            startSimulation();
-        }, Qt::QueuedConnection);
+                if (m_nodes.isEmpty()) {
+                    auto *placeholder =
+                        scene()->addText(QStringLiteral("No Markdown notes in this workspace."));
+                    placeholder->setDefaultTextColor(kTextColor);
+                    return;
+                }
+                buildScene();
+                startSimulation();
+            },
+            Qt::QueuedConnection);
     });
 }
 
@@ -296,18 +293,15 @@ void GraphView::scanNotes() {
     QHash<QString, int> byName; // Lower-cased note stem -> node index
     byName.reserve(64);
 
-    QDirIterator it(m_root,
-                    {QStringLiteral("*.md"), QStringLiteral("*.markdown")},
-                    QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(m_root, {QStringLiteral("*.md"), QStringLiteral("*.markdown")}, QDir::Files,
+                    QDirIterator::Subdirectories);
     int scanned = 0;
-    while (it.hasNext() && scanned < kMaxFilesScanned &&
-           m_nodes.size() < kMaxNodes) {
+    while (it.hasNext() && scanned < kMaxFilesScanned && m_nodes.size() < kMaxNodes) {
         const QString path = it.next();
         ++scanned;
         // Skip service directories (VCS / app state / package managers).
         const QString rel = QDir(m_root).relativeFilePath(path);
-        if (rel.startsWith(QStringLiteral(".git")) ||
-            rel.startsWith(QStringLiteral(".obsidian")) ||
+        if (rel.startsWith(QStringLiteral(".git")) || rel.startsWith(QStringLiteral(".obsidian")) ||
             rel.contains(QStringLiteral("/node_modules/"))) {
             continue;
         }
@@ -320,14 +314,13 @@ void GraphView::scanNotes() {
     }
     if (scanned >= kMaxFilesScanned) {
         infrastructure::Logger::instance().warn(
-            "Workspace",
-            QStringLiteral("GraphView: scan hit %1 files cap, graph may be "
-                           "partial.").arg(kMaxFilesScanned));
+            "Workspace", QStringLiteral("GraphView: scan hit %1 files cap, graph may be "
+                                        "partial.")
+                             .arg(kMaxFilesScanned));
     }
 
     // Second pass: extract [[wiki links]] and wire edges between known nodes.
-    static const QRegularExpression linkPattern(
-        QStringLiteral("\\[\\[([^\\]\\|#]+)"));
+    static const QRegularExpression linkPattern(QStringLiteral("\\[\\[([^\\]\\|#]+)"));
     for (int i = 0; i < m_nodes.size(); ++i) {
         QFile file(m_nodes[i].path);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -351,13 +344,13 @@ void GraphView::scanNotes() {
 }
 
 void GraphView::buildScene() {
-    auto* sc = scene();
+    auto *sc = scene();
     if (!sc || m_nodes.isEmpty()) {
         return;
     }
 
     for (int i = 0; i < m_nodes.size(); ++i) {
-        Node& n = m_nodes[i];
+        Node &n = m_nodes[i];
         n.radius = 8.0f + std::min(n.degree, 12) * 1.5f;
         n.vel = QPointF(0, 0);
         n.item = new NoteNodeItem(n.name, i, n.radius);
@@ -380,9 +373,8 @@ void GraphView::buildScene() {
     }
 
     QPen edgePen(kEdgeColor, 1.2);
-    for (Edge& e : m_edges) {
-        e.line = sc->addLine(QLineF(m_nodes[e.from].pos, m_nodes[e.to].pos),
-                             edgePen);
+    for (Edge &e : m_edges) {
+        e.line = sc->addLine(QLineF(m_nodes[e.from].pos, m_nodes[e.to].pos), edgePen);
         e.line->setZValue(0.0);
         if (m_nodes[e.from].item) {
             m_nodes[e.from].item->addIncidentEdge(e.line, true);
@@ -403,12 +395,12 @@ void GraphView::startSimulation() {
 }
 
 void GraphView::applyPositions() {
-    for (const Node& n : m_nodes) {
+    for (const Node &n : m_nodes) {
         if (n.item) {
             n.item->setPos(n.pos);
         }
     }
-    for (const Edge& e : m_edges) {
+    for (const Edge &e : m_edges) {
         if (e.line) {
             e.line->setLine(QLineF(m_nodes[e.from].pos, m_nodes[e.to].pos));
         }
@@ -453,10 +445,9 @@ void GraphView::simulationTick() {
     }
 
     // Springs along edges.
-    for (const Edge& e : m_edges) {
+    for (const Edge &e : m_edges) {
         QPointF delta = m_nodes[e.to].pos - m_nodes[e.from].pos;
-        const qreal d = std::sqrt(delta.x() * delta.x() +
-                                  delta.y() * delta.y());
+        const qreal d = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
         if (d < 1.0) {
             continue;
         }
@@ -495,21 +486,19 @@ void GraphView::simulationTick() {
     }
 }
 
-void GraphView::resizeEvent(QResizeEvent* event) {
+void GraphView::resizeEvent(QResizeEvent *event) {
     QGraphicsView::resizeEvent(event);
     // Keep everything reachable when the panel grows/shrinks.
     if (scene()) {
-        scene()->setSceneRect(
-            scene()->itemsBoundingRect().adjusted(-200, -200, 200, 200));
+        scene()->setSceneRect(scene()->itemsBoundingRect().adjusted(-200, -200, 200, 200));
     }
 }
 
-void GraphView::wheelEvent(QWheelEvent* event) {
+void GraphView::wheelEvent(QWheelEvent *event) {
     // Ctrl+wheel zooms (plain wheel scrolls like everywhere else).
     if (event->modifiers() & Qt::ControlModifier) {
         constexpr double kZoomStep = 1.15;
-        const double factor = event->angleDelta().y() > 0 ? kZoomStep
-                                                          : 1.0 / kZoomStep;
+        const double factor = event->angleDelta().y() > 0 ? kZoomStep : 1.0 / kZoomStep;
         scale(factor, factor);
         event->accept();
         return;

@@ -19,10 +19,11 @@ namespace fasthub::ui {
 class TelegramQrLoginDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit TelegramQrLoginDialog(std::shared_ptr<providers::telegram::TelegramProvider> provider, QWidget* parent = nullptr);
+    explicit TelegramQrLoginDialog(std::shared_ptr<providers::telegram::TelegramProvider> provider,
+                                   QWidget *parent = nullptr);
 
 private slots:
-    void onStateChanged(const QString& state, const QString& qrLink, const QString& details);
+    void onStateChanged(const QString &state, const QString &qrLink, const QString &details);
     void onSaveCredentials();
     void restartFlow();
 
@@ -30,12 +31,12 @@ private:
     void setupUi();
 
     std::shared_ptr<providers::telegram::TelegramProvider> m_provider;
-    QLabel* m_statusLabel;
-    QLabel* m_qrLabel;
-    QLineEdit* m_apiIdEdit;
-    QLineEdit* m_apiHashEdit;
-    QPushButton* m_saveCredentialsButton;
-    QPushButton* m_retryButton;
+    QLabel *m_statusLabel;
+    QLabel *m_qrLabel;
+    QLineEdit *m_apiIdEdit;
+    QLineEdit *m_apiHashEdit;
+    QPushButton *m_saveCredentialsButton;
+    QPushButton *m_retryButton;
 };
 
 } // namespace fasthub::ui

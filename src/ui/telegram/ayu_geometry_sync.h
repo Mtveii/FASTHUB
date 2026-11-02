@@ -34,12 +34,9 @@ struct OverlayRect {
 
 /// Computes the overlay rect. Safe against zero/negative sizes (returns a
 /// degenerate rect instead of dividing by zero).
-OverlayRect computeOverlayRect(const POINT& clientOrigin,
-                               const SIZE& clientSize,
-                               const QSize& windowLogical,
-                               const QPoint& containerRel,
-                               const QSize& containerSize,
-                               int titleBarHeight);
+OverlayRect computeOverlayRect(const POINT &clientOrigin, const SIZE &clientSize,
+                               const QSize &windowLogical, const QPoint &containerRel,
+                               const QSize &containerSize, int titleBarHeight);
 
 /// @brief Owns geometry application for one embedded HWND.
 ///
@@ -59,7 +56,7 @@ public:
     /// @brief Measures the main window and moves/regions @p ayu if needed.
     /// @param mainWindow top-level FastHub window (owner of the tab).
     /// @param container  widget whose bounds define the overlay area.
-    ApplyResult apply(HWND ayuHwnd, QWidget* mainWindow, QWidget* container);
+    ApplyResult apply(HWND ayuHwnd, QWidget *mainWindow, QWidget *container);
 
 private:
     bool m_lastValid = false;

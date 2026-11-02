@@ -10,9 +10,9 @@ public:
     explicit AIProvider(core::AIProviderType type);
     ~AIProvider() override = default;
 
-    std::string ask(const std::string& context, const std::string& prompt) override;
+    std::string ask(const std::string &context, const std::string &prompt) override;
 
-    void setApiKey(const std::string& apiKey);
+    void setApiKey(const std::string &apiKey);
 
 private:
     core::AIProviderType m_type;

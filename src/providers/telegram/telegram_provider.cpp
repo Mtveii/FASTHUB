@@ -15,10 +15,10 @@ namespace fasthub::providers::telegram {
 
 namespace {
 
-constexpr const char* kKeyApiId = "telegram.api_id";
-constexpr const char* kKeyApiHash = "telegram.api_hash";
+constexpr const char *kKeyApiId = "telegram.api_id";
+constexpr const char *kKeyApiHash = "telegram.api_hash";
 
-QString loadSecret(const std::string& key) {
+QString loadSecret(const std::string &key) {
     infrastructure::SecureStorage storage;
     return QString::fromStdString(storage.getSecret(key).value_or(std::string()));
 }
@@ -30,8 +30,9 @@ TelegramProvider::TelegramProvider() {
     if (isTdlibAvailable()) {
         // Updates arrive on the TDLib thread; marshal into this QObject's
         // thread (UI) via queued invocation.
-        m_tdClient->start([this](const QJsonObject& update) {
-            QMetaObject::invokeMethod(this, [this, update]() { onTdUpdate(update); }, Qt::QueuedConnection);
+        m_tdClient->start([this](const QJsonObject &update) {
+            QMetaObject::invokeMethod(
+                this, [this, update]() { onTdUpdate(update); }, Qt::QueuedConnection);
         });
     }
 
@@ -43,7 +44,8 @@ TelegramProvider::TelegramProvider() {
         sampleConv.title = "FastHub Team Chat (Telegram)";
         sampleConv.lastMessageText = "Welcome to FastHub Local First Telegram provider!";
         sampleConv.lastMessageTimestamp = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count();
+                                              std::chrono::system_clock::now().time_since_epoch())
+                                              .count();
         sampleConv.unreadCount = 0;
 
         database::DatabaseManager::instance().saveConversations({sampleConv});
@@ -63,32 +65,32 @@ TelegramProvider::TelegramProvider() {
 
 TelegramProvider::~TelegramProvider() = default;
 
-core::ProviderStatus TelegramProvider::getStatus() const {
-    return m_status;
-}
+core::ProviderStatus TelegramProvider::getStatus() const { return m_status; }
 
 std::vector<core::Conversation> TelegramProvider::getConversations() {
     // LOCAL FIRST: Load from SQLite cache instantly.
     return database::DatabaseManager::instance().getConversations();
 }
 
-std::vector<core::Message> TelegramProvider::getMessages(const std::string& conversationId) {
+std::vector<core::Message> TelegramProvider::getMessages(const std::string &conversationId) {
     // LOCAL FIRST: Load from SQLite cache instantly.
     return database::DatabaseManager::instance().getMessages(conversationId);
 }
 
-bool TelegramProvider::sendMessage(const std::string& conversationId, const std::string& text) {
+bool TelegramProvider::sendMessage(const std::string &conversationId, const std::string &text) {
     if (text.empty()) {
         return false;
     }
 
     core::Message msg;
-    msg.internalId = core::IdUtils::makeInternalId("telegram", QString::number(QDateTime::currentMSecsSinceEpoch()).toStdString());
+    msg.internalId = core::IdUtils::makeInternalId(
+        "telegram", QString::number(QDateTime::currentMSecsSinceEpoch()).toStdString());
     msg.conversationId = conversationId;
     msg.senderName = "You";
     msg.text = text;
     msg.timestamp = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
+                        std::chrono::system_clock::now().time_since_epoch())
+                        .count();
     msg.isOutgoing = true;
     msg.isPending = false;
 
@@ -99,24 +101,25 @@ bool TelegramProvider::sendMessage(const std::string& conversationId, const std:
     return saved;
 }
 
-bool TelegramProvider::login(const std::string& phoneNumber) {
+bool TelegramProvider::login(const std::string &phoneNumber) {
     // Privacy: never log the raw phone number (AGENTS.md §6.4).
     QString masked = QString::fromStdString(phoneNumber);
     if (masked.size() > 4) {
-        masked = masked.left(masked.size() - 4).replace(QRegularExpression("."), QChar('*')) + masked.right(4);
+        masked = masked.left(masked.size() - 4).replace(QRegularExpression("."), QChar('*')) +
+                 masked.right(4);
     }
     infrastructure::Logger::instance().info("Telegram", "Login initiated for phone: " + masked);
     m_status = core::ProviderStatus::Available;
     return true;
 }
 
-bool TelegramProvider::verifyCode(const std::string& code) {
+bool TelegramProvider::verifyCode(const std::string &code) {
     infrastructure::Logger::instance().info("Telegram", "Verification code accepted.");
     m_status = core::ProviderStatus::Available;
     return true;
 }
 
-void TelegramProvider::saveApiCredentials(const QString& apiId, const QString& apiHash) {
+void TelegramProvider::saveApiCredentials(const QString &apiId, const QString &apiHash) {
     infrastructure::SecureStorage storage;
     storage.setSecret(kKeyApiId, apiId.toStdString());
     storage.setSecret(kKeyApiHash, apiHash.toStdString());
@@ -126,16 +129,19 @@ void TelegramProvider::saveApiCredentials(const QString& apiId, const QString& a
 
 void TelegramProvider::startQrLogin() {
     if (!isTdlibAvailable()) {
-        emit qrLoginStateChanged(QStringLiteral("unavailable"), QString(),
-                                 QStringLiteral("tdjson.dll not found. Place it next to FastHub.exe to enable real login."));
+        emit qrLoginStateChanged(
+            QStringLiteral("unavailable"), QString(),
+            QStringLiteral(
+                "tdjson.dll not found. Place it next to FastHub.exe to enable real login."));
         return;
     }
 
     const QString apiId = loadSecret(kKeyApiId);
     const QString apiHash = loadSecret(kKeyApiHash);
     if (apiId.isEmpty() || apiHash.isEmpty()) {
-        emit qrLoginStateChanged(QStringLiteral("error"), QString(),
-                                 QStringLiteral("Missing API credentials. Set api_id/api_hash first."));
+        emit qrLoginStateChanged(
+            QStringLiteral("error"), QString(),
+            QStringLiteral("Missing API credentials. Set api_id/api_hash first."));
         return;
     }
 
@@ -162,27 +168,29 @@ void TelegramProvider::startQrLogin() {
     m_tdClient->send(QString::fromUtf8(QJsonDocument(request).toJson(QJsonDocument::Compact)));
 }
 
-void TelegramProvider::onTdUpdate(const QJsonObject& update) {
+void TelegramProvider::onTdUpdate(const QJsonObject &update) {
     const QString type = update.value("@type").toString();
     if (type == QLatin1String("updateAuthorizationState")) {
-        handleAuthState(update.value("authorization_state").toObject().value("@type").toString(), update);
+        handleAuthState(update.value("authorization_state").toObject().value("@type").toString(),
+                        update);
     } else if (type == QLatin1String("updateOption")) {
         // Options like @id may carry errors for bad api_id.
     } else if (type == QLatin1String("error")) {
-        infrastructure::Logger::instance().warn("Telegram",
-            "TDLib error: " + update.value("message").toString());
-        emit qrLoginStateChanged(QStringLiteral("error"), QString(), update.value("message").toString());
+        infrastructure::Logger::instance().warn("Telegram", "TDLib error: " +
+                                                                update.value("message").toString());
+        emit qrLoginStateChanged(QStringLiteral("error"), QString(),
+                                 update.value("message").toString());
     }
 }
 
-void TelegramProvider::handleAuthState(const QString& authState, const QJsonObject& update) {
+void TelegramProvider::handleAuthState(const QString &authState, const QJsonObject &update) {
     Q_UNUSED(update);
 
     if (authState == QLatin1String("authorizationStateWaitPhoneNumber") ||
         authState == QLatin1String("authorizationStateWaitOtherDeviceConfirmation")) {
         if (authState == QLatin1String("authorizationStateWaitOtherDeviceConfirmation")) {
-            const QString link = update.value("authorization_state").toObject()
-                                     .value("link").toString();
+            const QString link =
+                update.value("authorization_state").toObject().value("link").toString();
             m_status = core::ProviderStatus::Unavailable; // until confirmed
             emit qrLoginStateChanged(QStringLiteral("wait_qr"), link,
                                      QStringLiteral("Scan the QR with your Telegram app."));
@@ -200,8 +208,9 @@ void TelegramProvider::handleAuthState(const QString& authState, const QJsonObje
                authState == QLatin1String("authorizationStateWaitCode") ||
                authState == QLatin1String("authorizationStateWaitPassword")) {
         // Fallback states outside QR flow - surfaced as-is.
-        emit qrLoginStateChanged(QStringLiteral("wait_qr"), QString(),
-                                 QStringLiteral("Additional confirmation required in Telegram (%1).").arg(authState));
+        emit qrLoginStateChanged(
+            QStringLiteral("wait_qr"), QString(),
+            QStringLiteral("Additional confirmation required in Telegram (%1).").arg(authState));
     }
 }
 

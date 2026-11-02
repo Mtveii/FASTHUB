@@ -14,11 +14,12 @@ namespace fasthub::ui {
 /// Handles text/file/link/group types.
 class CanvasNodeItem : public QGraphicsRectItem {
 public:
-    explicit CanvasNodeItem(const core::canvas::CanvasNode& node, const QString& canvasFilePath, QGraphicsItem* parent = nullptr);
+    explicit CanvasNodeItem(const core::canvas::CanvasNode &node, const QString &canvasFilePath,
+                            QGraphicsItem *parent = nullptr);
 
     /// @brief Bounding rect in scene coords.
     QRectF boundingRect() const override;
-    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     QString nodeId() const { return m_id; }
 
@@ -30,25 +31,25 @@ private:
     QString m_url;
     QString m_label;
     QColor m_color;
-    QGraphicsProxyWidget* m_proxy = nullptr;
+    QGraphicsProxyWidget *m_proxy = nullptr;
 };
 
 /// @brief Edge path between two nodes with side-aware cubic curves.
 class CanvasEdgeItem : public QGraphicsPathItem {
 public:
-    CanvasEdgeItem(const core::canvas::CanvasEdge& edge, QGraphicsItem* from, QGraphicsItem* to);
+    CanvasEdgeItem(const core::canvas::CanvasEdge &edge, QGraphicsItem *from, QGraphicsItem *to);
 
     void updatePath();
 
 private:
     core::canvas::CanvasSide m_fromSide;
     core::canvas::CanvasSide m_toSide;
-    QGraphicsItem* m_fromItem = nullptr;
-    QGraphicsItem* m_toItem = nullptr;
+    QGraphicsItem *m_fromItem = nullptr;
+    QGraphicsItem *m_toItem = nullptr;
     QString m_label;
     QColor m_color;
 
-    static QPointF sidePoint(const QRectF& rect, core::canvas::CanvasSide side);
+    static QPointF sidePoint(const QRectF &rect, core::canvas::CanvasSide side);
 };
 
 /// @brief QGraphicsScene rendering a CanvasDocument.
@@ -56,17 +57,17 @@ private:
 class CanvasScene : public QGraphicsScene {
     Q_OBJECT
 public:
-    explicit CanvasScene(QObject* parent = nullptr);
+    explicit CanvasScene(QObject *parent = nullptr);
 
     /// @brief Replace scene contents from document. Resolves file paths against canvasFilePath.
-    void setDocument(const core::canvas::CanvasDocument& doc, const QString& canvasFilePath);
+    void setDocument(const core::canvas::CanvasDocument &doc, const QString &canvasFilePath);
 
     /// @brief Clear all items.
     void clearCanvas();
 
 private:
-    QHash<QString, CanvasNodeItem*> m_nodeItems;
-    QVector<CanvasEdgeItem*> m_edgeItems;
+    QHash<QString, CanvasNodeItem *> m_nodeItems;
+    QVector<CanvasEdgeItem *> m_edgeItems;
 };
 
 } // namespace fasthub::ui

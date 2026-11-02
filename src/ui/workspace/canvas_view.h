@@ -9,15 +9,15 @@ namespace fasthub::ui {
 class CanvasView : public QGraphicsView {
     Q_OBJECT
 public:
-    explicit CanvasView(QWidget* parent = nullptr);
+    explicit CanvasView(QWidget *parent = nullptr);
 
 protected:
-    void wheelEvent(QWheelEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
-    void keyReleaseEvent(QKeyEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     bool m_spaceHeld = false;

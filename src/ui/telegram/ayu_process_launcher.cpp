@@ -11,8 +11,7 @@
 
 namespace fasthub::ui::ayu {
 
-ProcessLauncher::ProcessLauncher(QString imageName)
-    : m_imageName(std::move(imageName)) {}
+ProcessLauncher::ProcessLauncher(QString imageName) : m_imageName(std::move(imageName)) {}
 
 QString ProcessLauncher::locateExecutable() const {
     const QString appDir = QCoreApplication::applicationDirPath();
@@ -25,10 +24,12 @@ QString ProcessLauncher::locateExecutable() const {
     };
     // Fallback to old name if new binary not yet built.
     if (m_imageName.compare(QStringLiteral("FastHub_Telegram.exe"), Qt::CaseInsensitive) == 0) {
-        candidates += QDir::cleanPath(appDir + QStringLiteral("/../../../third_party/ayugram/AyuGram.exe"));
-        candidates += QDir::cleanPath(appDir + QStringLiteral("/../../../../third_party/ayugram/AyuGram.exe"));
+        candidates +=
+            QDir::cleanPath(appDir + QStringLiteral("/../../../third_party/ayugram/AyuGram.exe"));
+        candidates += QDir::cleanPath(
+            appDir + QStringLiteral("/../../../../third_party/ayugram/AyuGram.exe"));
     }
-    for (const QString& path : candidates) {
+    for (const QString &path : candidates) {
         if (QFileInfo::exists(path)) {
             return path;
         }
@@ -54,8 +55,7 @@ bool ProcessLauncher::hasWindowlessOrphan() const {
 
 void ProcessLauncher::terminateAllInstances() {
     QProcess::startDetached(QStringLiteral("taskkill"),
-                            {QStringLiteral("/IM"), m_imageName,
-                             QStringLiteral("/F")});
+                            {QStringLiteral("/IM"), m_imageName, QStringLiteral("/F")});
 }
 
 } // namespace fasthub::ui::ayu

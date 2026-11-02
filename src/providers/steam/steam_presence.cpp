@@ -4,7 +4,7 @@ namespace fasthub::providers::steam {
 
 namespace {
 
-SteamPresence parsePlayer(const QJsonObject& o) {
+SteamPresence parsePlayer(const QJsonObject &o) {
     SteamPresence p;
     p.steamId = o.value(QStringLiteral("steamid")).toString();
     p.personaName = o.value(QStringLiteral("personaname")).toString();
@@ -17,12 +17,15 @@ SteamPresence parsePlayer(const QJsonObject& o) {
 
 namespace SteamPresenceCodec {
 
-QVector<SteamPresence> parsePlayerSummaries(const QJsonDocument& doc) {
+QVector<SteamPresence> parsePlayerSummaries(const QJsonDocument &doc) {
     QVector<SteamPresence> result;
-    const QJsonArray players = doc.object().value(QStringLiteral("response"))
-                                   .toObject().value(QStringLiteral("players")).toArray();
+    const QJsonArray players = doc.object()
+                                   .value(QStringLiteral("response"))
+                                   .toObject()
+                                   .value(QStringLiteral("players"))
+                                   .toArray();
     result.reserve(players.size());
-    for (const auto& v : players) {
+    for (const auto &v : players) {
         const SteamPresence p = parsePlayer(v.toObject());
         if (!p.steamId.isEmpty()) {
             result.push_back(p);
@@ -31,11 +34,14 @@ QVector<SteamPresence> parsePlayerSummaries(const QJsonDocument& doc) {
     return result;
 }
 
-QStringList parseFriendIds(const QJsonDocument& doc) {
+QStringList parseFriendIds(const QJsonDocument &doc) {
     QStringList ids;
-    const QJsonArray friends = doc.object().value(QStringLiteral("friendslist"))
-                                   .toObject().value(QStringLiteral("friends")).toArray();
-    for (const auto& v : friends) {
+    const QJsonArray friends = doc.object()
+                                   .value(QStringLiteral("friendslist"))
+                                   .toObject()
+                                   .value(QStringLiteral("friends"))
+                                   .toArray();
+    for (const auto &v : friends) {
         const QString id = v.toObject().value(QStringLiteral("steamid")).toString();
         if (!id.isEmpty()) {
             ids.push_back(id);
@@ -44,8 +50,8 @@ QStringList parseFriendIds(const QJsonDocument& doc) {
     return ids;
 }
 
-bool snapshotDiffers(const QMap<QString, SteamPresence>& oldSnapshot,
-                     const QMap<QString, SteamPresence>& newSnapshot) {
+bool snapshotDiffers(const QMap<QString, SteamPresence> &oldSnapshot,
+                     const QMap<QString, SteamPresence> &newSnapshot) {
     if (oldSnapshot.size() != newSnapshot.size()) {
         return true;
     }
@@ -54,8 +60,8 @@ bool snapshotDiffers(const QMap<QString, SteamPresence>& oldSnapshot,
         if (oldIt == oldSnapshot.constEnd()) {
             return true;
         }
-        const SteamPresence& a = oldIt.value();
-        const SteamPresence& b = it.value();
+        const SteamPresence &a = oldIt.value();
+        const SteamPresence &b = it.value();
         if (a.personaName != b.personaName || a.personaState != b.personaState ||
             a.gameName != b.gameName) {
             return true;

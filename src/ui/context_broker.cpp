@@ -2,12 +2,12 @@
 
 namespace fasthub::ui {
 
-ContextBroker& ContextBroker::instance() {
+ContextBroker &ContextBroker::instance() {
     static ContextBroker s;
     return s;
 }
 
-void ContextBroker::setSelection(const QString& source, const QString& text) {
+void ContextBroker::setSelection(const QString &source, const QString &text) {
     if (m_selectionSource == source && m_selectionText == text) {
         return;
     }
@@ -16,7 +16,7 @@ void ContextBroker::setSelection(const QString& source, const QString& text) {
     emit contextChanged();
 }
 
-void ContextBroker::setCurrentFile(const QString& path, std::function<QString()> contentProvider) {
+void ContextBroker::setCurrentFile(const QString &path, std::function<QString()> contentProvider) {
     if (m_filePath == path) {
         m_fileProvider = std::move(contentProvider);
         return;

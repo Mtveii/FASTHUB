@@ -15,7 +15,7 @@ class AppearanceWidget;
 class PluginsWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit PluginsWidget(QWidget* parent = nullptr);
+    explicit PluginsWidget(QWidget *parent = nullptr);
     ~PluginsWidget() override = default;
 
 private slots:
@@ -25,9 +25,9 @@ private:
     void setupUi();
     void refreshList();
 
-    QTabWidget* m_tabs;
-    QListWidget* m_pluginsListWidget;
-    QPushButton* m_installButton;
+    QTabWidget *m_tabs;
+    QListWidget *m_pluginsListWidget;
+    QPushButton *m_installButton;
 };
 
 } // namespace fasthub::ui

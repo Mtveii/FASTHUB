@@ -13,7 +13,7 @@ namespace fasthub::ui {
 namespace MarkdownRenderer {
 
 /// @brief Renders @p markdown to an HTML fragment (no <html> wrapper).
-QString renderToHtml(const QString& markdown);
+QString renderToHtml(const QString &markdown);
 
 } // namespace MarkdownRenderer
 

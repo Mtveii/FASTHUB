@@ -4,15 +4,11 @@
 
 namespace fasthub::infrastructure {
 
-enum class PerformanceMode {
-    Balanced,
-    Performance,
-    BatterySaver
-};
+enum class PerformanceMode { Balanced, Performance, BatterySaver };
 
 class PerformanceManager {
 public:
-    static PerformanceManager& instance();
+    static PerformanceManager &instance();
 
     void setMode(PerformanceMode mode);
     PerformanceMode getMode() const;

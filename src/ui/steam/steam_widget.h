@@ -17,21 +17,22 @@ class SteamSettingsDialog;
 class SteamWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit SteamWidget(std::shared_ptr<providers::steam::SteamProvider> steamProvider, QWidget* parent = nullptr);
+    explicit SteamWidget(std::shared_ptr<providers::steam::SteamProvider> steamProvider,
+                         QWidget *parent = nullptr);
     ~SteamWidget() override = default;
 
 private slots:
     void loadFriends();
-    void onPresenceUpdated(const QString& status);
+    void onPresenceUpdated(const QString &status);
     void onSettingsClicked();
 
 private:
     void setupUi();
-    QIcon statusDot(const fasthub::providers::steam::SteamPresence& p) const;
+    QIcon statusDot(const fasthub::providers::steam::SteamPresence &p) const;
 
     std::shared_ptr<providers::steam::SteamProvider> m_steamProvider;
-    QListWidget* m_friendsListWidget;
-    QLabel* m_statusLabel;
+    QListWidget *m_friendsListWidget;
+    QLabel *m_statusLabel;
     QTimer m_uiRefreshTimer; // debounces bursts of presenceUpdated signals
 };
 

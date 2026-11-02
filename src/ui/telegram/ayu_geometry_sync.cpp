@@ -7,14 +7,11 @@
 
 namespace fasthub::ui::ayu {
 
-OverlayRect computeOverlayRect(const POINT& clientOrigin,
-                               const SIZE& clientSize,
-                               const QSize& windowLogical,
-                               const QPoint& containerRel,
-                               const QSize& containerSize,
-                               int titleBarHeight) {
-    if (clientSize.cx <= 0 || clientSize.cy <= 0 ||
-        windowLogical.width() <= 0 || windowLogical.height() <= 0) {
+OverlayRect computeOverlayRect(const POINT &clientOrigin, const SIZE &clientSize,
+                               const QSize &windowLogical, const QPoint &containerRel,
+                               const QSize &containerSize, int titleBarHeight) {
+    if (clientSize.cx <= 0 || clientSize.cy <= 0 || windowLogical.width() <= 0 ||
+        windowLogical.height() <= 0) {
         return {};
     }
 
@@ -40,9 +37,8 @@ void GeometrySync::resetCache() {
     m_lastRgnValid = false;
 }
 
-GeometrySync::ApplyResult GeometrySync::apply(HWND ayuHwnd,
-                                              QWidget* mainWindow,
-                                              QWidget* container) {
+GeometrySync::ApplyResult GeometrySync::apply(HWND ayuHwnd, QWidget *mainWindow,
+                                              QWidget *container) {
     if (!ayuHwnd || !mainWindow || !container || !container->isVisible()) {
         return ApplyResult::Skipped;
     }
@@ -55,8 +51,7 @@ GeometrySync::ApplyResult GeometrySync::apply(HWND ayuHwnd,
     if (!GetClientRect(mainHwnd, &clientRect)) {
         return ApplyResult::Failed;
     }
-    const SIZE clientSize{clientRect.right - clientRect.left,
-                          clientRect.bottom - clientRect.top};
+    const SIZE clientSize{clientRect.right - clientRect.left, clientRect.bottom - clientRect.top};
     if (clientSize.cx <= 0 || clientSize.cy <= 0) {
         return ApplyResult::Skipped; // Minimized / still laying out
     }
@@ -65,31 +60,35 @@ GeometrySync::ApplyResult GeometrySync::apply(HWND ayuHwnd,
         return ApplyResult::Failed;
     }
 
-    const OverlayRect r = computeOverlayRect(
-        clientOrigin, clientSize, mainWindow->size(),
-        container->mapTo(mainWindow, QPoint(0, 0)), container->size(),
-        kAyuTitleBarHeight);
+    const OverlayRect r = computeOverlayRect(clientOrigin, clientSize, mainWindow->size(),
+                                             container->mapTo(mainWindow, QPoint(0, 0)),
+                                             container->size(), kAyuTitleBarHeight);
 
     ApplyResult result = ApplyResult::Skipped;
-    if (!m_lastValid || r.x != m_lastX || r.y != m_lastY ||
-        r.w != m_lastW || r.h != m_lastH) {
+    if (!m_lastValid || r.x != m_lastX || r.y != m_lastY || r.w != m_lastW || r.h != m_lastH) {
         if (!MoveWindow(ayuHwnd, r.x, r.y, r.w, r.h, TRUE)) {
             infrastructure::Logger::instance().warn(
-                "Telegram", QStringLiteral("MoveWindow failed (err %1).")
-                                .arg(GetLastError()));
+                "Telegram", QStringLiteral("MoveWindow failed (err %1).").arg(GetLastError()));
             return ApplyResult::Failed;
         }
-        m_lastX = r.x; m_lastY = r.y; m_lastW = r.w; m_lastH = r.h;
+        m_lastX = r.x;
+        m_lastY = r.y;
+        m_lastW = r.w;
+        m_lastH = r.h;
         m_lastValid = true;
         result = ApplyResult::Moved;
 
-        infrastructure::Logger::instance().debug("Telegram",
-            QStringLiteral("geo: origin=%1,%2 rel=%3,%4 scale=%5 -> %6,%7 %8x%9")
-                .arg(clientOrigin.x).arg(clientOrigin.y)
-                .arg(container->mapTo(mainWindow, QPoint(0, 0)).x())
-                .arg(container->mapTo(mainWindow, QPoint(0, 0)).y())
-                .arg(double(clientSize.cx) / mainWindow->width(), 0, 'f', 2)
-                .arg(r.x).arg(r.y).arg(r.w).arg(r.h));
+        infrastructure::Logger::instance().debug(
+            "Telegram", QStringLiteral("geo: origin=%1,%2 rel=%3,%4 scale=%5 -> %6,%7 %8x%9")
+                            .arg(clientOrigin.x)
+                            .arg(clientOrigin.y)
+                            .arg(container->mapTo(mainWindow, QPoint(0, 0)).x())
+                            .arg(container->mapTo(mainWindow, QPoint(0, 0)).y())
+                            .arg(double(clientSize.cx) / mainWindow->width(), 0, 'f', 2)
+                            .arg(r.x)
+                            .arg(r.y)
+                            .arg(r.w)
+                            .arg(r.h));
     }
 
     // Region only when its SHAPE changed - not on every move.
@@ -100,8 +99,7 @@ GeometrySync::ApplyResult GeometrySync::apply(HWND ayuHwnd,
         } else {
             HRGN region = CreateRectRgn(0, r.titlePx, r.w, r.h);
             if (!region) {
-                infrastructure::Logger::instance().error(
-                    "Telegram", "CreateRectRgn failed.");
+                infrastructure::Logger::instance().error("Telegram", "CreateRectRgn failed.");
                 return ApplyResult::Failed;
             }
             // SetWindowRgn takes ownership of the region ONLY on success;
@@ -109,8 +107,8 @@ GeometrySync::ApplyResult GeometrySync::apply(HWND ayuHwnd,
             if (SetWindowRgn(ayuHwnd, region, FALSE) == 0) {
                 DeleteObject(region);
                 infrastructure::Logger::instance().warn(
-                    "Telegram", QStringLiteral("SetWindowRgn failed (err %1).")
-                                    .arg(GetLastError()));
+                    "Telegram",
+                    QStringLiteral("SetWindowRgn failed (err %1).").arg(GetLastError()));
                 return ApplyResult::Failed;
             }
         }

@@ -14,7 +14,8 @@ namespace fasthub::ui {
 class SteamSettingsDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit SteamSettingsDialog(std::shared_ptr<providers::steam::SteamProvider> provider, QWidget* parent = nullptr);
+    explicit SteamSettingsDialog(std::shared_ptr<providers::steam::SteamProvider> provider,
+                                 QWidget *parent = nullptr);
 
 private slots:
     void onSave();
@@ -23,9 +24,9 @@ private:
     void setupUi();
 
     std::shared_ptr<providers::steam::SteamProvider> m_provider;
-    QLineEdit* m_apiKeyEdit;
-    QLineEdit* m_steamIdEdit;
-    QLabel* m_hintLabel;
+    QLineEdit *m_apiKeyEdit;
+    QLineEdit *m_steamIdEdit;
+    QLabel *m_hintLabel;
 };
 
 } // namespace fasthub::ui

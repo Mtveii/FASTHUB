@@ -8,7 +8,8 @@ namespace fasthub::core {
 class IdUtils {
 public:
     /// @brief Generates a unified internal ID in format `provider:externalId`.
-    static std::string makeInternalId(const std::string& providerName, const std::string& externalId) {
+    static std::string makeInternalId(const std::string &providerName,
+                                      const std::string &externalId) {
         return providerName + ":" + externalId;
     }
 };

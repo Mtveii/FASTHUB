@@ -15,11 +15,11 @@ namespace fasthub::ui {
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget* parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override = default;
 
     /// @brief Points the Workspace tab at @p path (from onboarding/settings).
-    void setInitialWorkspacePath(const QString& path);
+    void setInitialWorkspacePath(const QString &path);
 
 private slots:
     void openGlobalSearch();
@@ -27,11 +27,11 @@ private slots:
 
 private:
     void setupUi();
-    QIcon providerIcon(const QString& resource, const QColor& color) const;
+    QIcon providerIcon(const QString &resource, const QColor &color) const;
 
-    QTabWidget* m_topTabs = nullptr;
-    class WorkspaceWidget* m_workspaceWidget = nullptr;
-    class AIWidget* m_aiWidget = nullptr;
+    QTabWidget *m_topTabs = nullptr;
+    class WorkspaceWidget *m_workspaceWidget = nullptr;
+    class AIWidget *m_aiWidget = nullptr;
 
     std::shared_ptr<providers::telegram::TelegramProvider> m_telegramProvider;
     std::shared_ptr<providers::ai::AIProvider> m_aiProvider;

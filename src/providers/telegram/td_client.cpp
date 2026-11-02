@@ -14,19 +14,20 @@ namespace {
 
 // tdjson C API signatures (https://core.telegram.org/tdlib/docs/td__json__client_8h.html)
 using td_create_client_id_fn = int();
-using td_send_fn = void(int, const char*);
-using td_receive_fn = const char*(double);
-using td_receive_timeout_fn = const char*(double);
-using td_execute_fn = const char*(const char*);
+using td_send_fn = void(int, const char *);
+using td_receive_fn = const char *(double);
+using td_receive_timeout_fn = const char *(double);
+using td_execute_fn = const char *(const char *);
 
-constexpr const char* kTdJsonDllName = "tdjson.dll";
+constexpr const char *kTdJsonDllName = "tdjson.dll";
 
 } // namespace
 
 TdClient::TdClient() {
     m_available.store(loadLibrary());
     if (!isAvailable()) {
-        infrastructure::Logger::instance().warn("Telegram",
+        infrastructure::Logger::instance().warn(
+            "Telegram",
             "tdjson.dll not found - TDLib integration disabled, provider stays in mock mode.");
     }
 }
@@ -48,10 +49,11 @@ bool TdClient::loadLibrary() {
         return false;
     }
 
-    auto resolve = [lib](const char* name) -> void* {
-        void* fn = reinterpret_cast<void*>(::GetProcAddress(lib, name));
+    auto resolve = [lib](const char *name) -> void * {
+        void *fn = reinterpret_cast<void *>(::GetProcAddress(lib, name));
         if (!fn) {
-            infrastructure::Logger::instance().error("Telegram", QString("tdjson export missing: %1").arg(name));
+            infrastructure::Logger::instance().error(
+                "Telegram", QString("tdjson export missing: %1").arg(name));
         }
         return fn;
     };
@@ -70,35 +72,37 @@ bool TdClient::loadLibrary() {
     return true;
 }
 
-void TdClient::start(std::function<void(const QJsonObject&)> updateCallback) {
+void TdClient::start(std::function<void(const QJsonObject &)> updateCallback) {
     if (!isAvailable() || m_running.load()) {
         return;
     }
     m_updateCallback = std::move(updateCallback);
 
-    const int clientId = reinterpret_cast<td_create_client_id_fn*>(m_createClientId)();
+    const int clientId = reinterpret_cast<td_create_client_id_fn *>(m_createClientId)();
     m_clientIdValue = clientId;
 
     m_running.store(true);
     m_receiveThread = std::make_unique<std::thread>([this]() { receiveLoop(); });
 }
 
-void TdClient::send(const QString& jsonRequest) {
-    if (!isAvailable()) return;
+void TdClient::send(const QString &jsonRequest) {
+    if (!isAvailable())
+        return;
     std::lock_guard<std::mutex> lock(m_sendMutex);
-    reinterpret_cast<td_send_fn*>(m_sendFn)(m_clientIdValue, jsonRequest.toUtf8().constData());
+    reinterpret_cast<td_send_fn *>(m_sendFn)(m_clientIdValue, jsonRequest.toUtf8().constData());
 }
 
-void TdClient::execute(const QString& jsonRequest) {
-    if (!isAvailable()) return;
-    reinterpret_cast<td_execute_fn*>(m_executeFn)(jsonRequest.toUtf8().constData());
+void TdClient::execute(const QString &jsonRequest) {
+    if (!isAvailable())
+        return;
+    reinterpret_cast<td_execute_fn *>(m_executeFn)(jsonRequest.toUtf8().constData());
 }
 
 void TdClient::receiveLoop() {
-    auto receive = reinterpret_cast<td_receive_timeout_fn*>(m_receiveFn);
+    auto receive = reinterpret_cast<td_receive_timeout_fn *>(m_receiveFn);
     while (m_running.load()) {
         // 1s timeout keeps shutdown latency bounded.
-        const char* raw = receive(1.0);
+        const char *raw = receive(1.0);
         if (!raw) {
             continue;
         }
@@ -107,11 +111,12 @@ void TdClient::receiveLoop() {
         if (m_updateCallback) {
             try {
                 m_updateCallback(update);
-            } catch (const std::exception& e) {
-                infrastructure::Logger::instance().error("Telegram",
-                    QString("Update handler exception: %1").arg(e.what()));
+            } catch (const std::exception &e) {
+                infrastructure::Logger::instance().error(
+                    "Telegram", QString("Update handler exception: %1").arg(e.what()));
             } catch (...) {
-                infrastructure::Logger::instance().error("Telegram", "Update handler unknown exception.");
+                infrastructure::Logger::instance().error("Telegram",
+                                                         "Update handler unknown exception.");
             }
         }
     }

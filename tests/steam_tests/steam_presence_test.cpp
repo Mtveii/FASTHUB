@@ -17,8 +17,7 @@ private slots:
 private:
 };
 
-void SteamPresenceTest::parsePlayerSummaries()
-{
+void SteamPresenceTest::parsePlayerSummaries() {
     const QByteArray json = R"({
         "response": {
             "players": [
@@ -29,7 +28,8 @@ void SteamPresenceTest::parsePlayerSummaries()
         }
     })";
 
-    const auto players = sp::SteamPresenceCodec::parsePlayerSummaries(QJsonDocument::fromJson(json));
+    const auto players =
+        sp::SteamPresenceCodec::parsePlayerSummaries(QJsonDocument::fromJson(json));
     QCOMPARE(players.size(), 2); // malformed entry skipped
 
     QCOMPARE(players[0].personaName, QString("Gaben"));
@@ -40,8 +40,7 @@ void SteamPresenceTest::parsePlayerSummaries()
     QVERIFY(!players[1].isInGame());
 }
 
-void SteamPresenceTest::parseFriendIds()
-{
+void SteamPresenceTest::parseFriendIds() {
     const QByteArray json = R"({
         "friendslist": {
             "friends": [
@@ -57,8 +56,7 @@ void SteamPresenceTest::parseFriendIds()
     QCOMPARE(ids.front(), QString("76561190000000001"));
 }
 
-void SteamPresenceTest::presenceLineMapping()
-{
+void SteamPresenceTest::presenceLineMapping() {
     sp::SteamPresence offline;
     offline.personaState = 0;
     QCOMPARE(offline.presenceLine(), QString("Offline"));
@@ -77,8 +75,7 @@ void SteamPresenceTest::presenceLineMapping()
     QCOMPARE(gaming.presenceLine(), QString("Playing: Dota 2"));
 }
 
-void SteamPresenceTest::diffDetection()
-{
+void SteamPresenceTest::diffDetection() {
     QMap<QString, sp::SteamPresence> a;
     a.insert("id1", {"id1", "Alice", 1, ""});
 

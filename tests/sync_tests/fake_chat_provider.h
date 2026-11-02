@@ -33,12 +33,12 @@ public:
         return {c};
     }
 
-    std::vector<fasthub::core::Message> getMessages(const std::string& conversationId) override {
+    std::vector<fasthub::core::Message> getMessages(const std::string &conversationId) override {
         Q_UNUSED(conversationId);
         return {};
     }
 
-    bool sendMessage(const std::string& conversationId, const std::string& text) override {
+    bool sendMessage(const std::string &conversationId, const std::string &text) override {
         Q_UNUSED(conversationId);
         Q_UNUSED(text);
         return true;

@@ -23,12 +23,12 @@ public:
 
     core::ProviderStatus getStatus() const override;
     std::vector<core::Conversation> getConversations() override;
-    std::vector<core::Message> getMessages(const std::string& conversationId) override;
-    bool sendMessage(const std::string& conversationId, const std::string& text) override;
+    std::vector<core::Message> getMessages(const std::string &conversationId) override;
+    bool sendMessage(const std::string &conversationId, const std::string &text) override;
 
     /// @brief Legacy mock-mode entry points (kept for offline demo mode).
-    bool login(const std::string& phoneNumber);
-    bool verifyCode(const std::string& code);
+    bool login(const std::string &phoneNumber);
+    bool verifyCode(const std::string &code);
 
     /// @brief true if TDLib integration is usable on this machine.
     bool isTdlibAvailable() const { return m_tdClient && m_tdClient->isAvailable(); }
@@ -39,7 +39,7 @@ public slots:
     void startQrLogin();
 
     /// @brief Persists Telegram API credentials via ISecureStorage (DPAPI).
-    void saveApiCredentials(const QString& apiId, const QString& apiHash);
+    void saveApiCredentials(const QString &apiId, const QString &apiHash);
 
 signals:
     /// @brief Emitted on every authorization step.
@@ -49,10 +49,10 @@ signals:
     void qrLoginStateChanged(QString state, QString qrLink, QString details);
 
 private slots:
-    void onTdUpdate(const QJsonObject& update);
+    void onTdUpdate(const QJsonObject &update);
 
 private:
-    void handleAuthState(const QString& authState, const QJsonObject& update);
+    void handleAuthState(const QString &authState, const QJsonObject &update);
 
     core::ProviderStatus m_status = core::ProviderStatus::Available;
     std::unique_ptr<TdClient> m_tdClient;

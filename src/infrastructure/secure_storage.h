@@ -10,9 +10,9 @@ public:
     SecureStorage();
     ~SecureStorage() override = default;
 
-    bool setSecret(const std::string& key, const std::string& value) override;
-    std::optional<std::string> getSecret(const std::string& key) override;
-    bool removeSecret(const std::string& key) override;
+    bool setSecret(const std::string &key, const std::string &value) override;
+    std::optional<std::string> getSecret(const std::string &key) override;
+    bool removeSecret(const std::string &key) override;
 
 private:
     QString getStoragePath() const;

@@ -16,18 +16,18 @@
 namespace fasthub::providers::discord {
 
 namespace {
-constexpr const char* kKeyClientId = "discord.client_id";
-constexpr const char* kKeyClientSecret = "discord.client_secret";
-constexpr const char* kKeyAccessToken = "discord.access_token";
-constexpr const char* kKeyRefreshToken = "discord.refresh_token";
+constexpr const char *kKeyClientId = "discord.client_id";
+constexpr const char *kKeyClientSecret = "discord.client_secret";
+constexpr const char *kKeyAccessToken = "discord.access_token";
+constexpr const char *kKeyRefreshToken = "discord.refresh_token";
 
-QString secret(const std::string& key) {
+QString secret(const std::string &key) {
     infrastructure::SecureStorage storage;
     return QString::fromStdString(storage.getSecret(key).value_or(std::string()));
 }
 } // namespace
 
-DiscordOauthService::DiscordOauthService(QObject* parent) : QObject(parent) {
+DiscordOauthService::DiscordOauthService(QObject *parent) : QObject(parent) {
     m_http = new QNetworkAccessManager(this);
 }
 
@@ -35,26 +35,31 @@ bool DiscordOauthService::hasCredentials() const {
     return !secret(kKeyClientId).isEmpty() && !secret(kKeyClientSecret).isEmpty();
 }
 
-void DiscordOauthService::saveAppCredentials(const QString& clientId, const QString& clientSecret) {
+void DiscordOauthService::saveAppCredentials(const QString &clientId, const QString &clientSecret) {
     infrastructure::SecureStorage storage;
     storage.setSecret(kKeyClientId, clientId.toStdString());
     storage.setSecret(kKeyClientSecret, clientSecret.toStdString());
-    infrastructure::Logger::instance().info("Discord", "OAuth app credentials saved (DPAPI-protected).");
+    infrastructure::Logger::instance().info("Discord",
+                                            "OAuth app credentials saved (DPAPI-protected).");
 }
 
 void DiscordOauthService::beginLogin() {
     if (!hasCredentials()) {
         emit loginStateChanged(QStringLiteral("error"),
-            QStringLiteral("Missing application credentials. Register an app at discord.com/developers/applications first."));
+                               QStringLiteral("Missing application credentials. Register an app at "
+                                              "discord.com/developers/applications first."));
         return;
     }
 
     if (!m_listener.listen(QHostAddress::LocalHost, kCallbackPort)) {
         emit loginStateChanged(QStringLiteral("error"),
-            QStringLiteral("Cannot listen on 127.0.0.1:%1: %2").arg(kCallbackPort).arg(m_listener.errorString()));
+                               QStringLiteral("Cannot listen on 127.0.0.1:%1: %2")
+                                   .arg(kCallbackPort)
+                                   .arg(m_listener.errorString()));
         return;
     }
-    connect(&m_listener, &QTcpServer::newConnection, this, &DiscordOauthService::onCallbackConnection, Qt::UniqueConnection);
+    connect(&m_listener, &QTcpServer::newConnection, this,
+            &DiscordOauthService::onCallbackConnection, Qt::UniqueConnection);
 
     QUrl url(QStringLiteral("https://discord.com/oauth2/authorize"));
     QUrlQuery query;
@@ -65,13 +70,16 @@ void DiscordOauthService::beginLogin() {
     query.addQueryItem(QStringLiteral("prompt"), QStringLiteral("consent"));
     url.setQuery(query);
 
-    emit loginStateChanged(QStringLiteral("opened"), QStringLiteral("Browser opened for authorization."));
+    emit loginStateChanged(QStringLiteral("opened"),
+                           QStringLiteral("Browser opened for authorization."));
     QDesktopServices::openUrl(url);
-    emit loginStateChanged(QStringLiteral("waiting"), QStringLiteral("Waiting for redirect on 127.0.0.1:%1...").arg(kCallbackPort));
+    emit loginStateChanged(
+        QStringLiteral("waiting"),
+        QStringLiteral("Waiting for redirect on 127.0.0.1:%1...").arg(kCallbackPort));
 }
 
 void DiscordOauthService::onCallbackConnection() {
-    QTcpSocket* socket = m_listener.nextPendingConnection();
+    QTcpSocket *socket = m_listener.nextPendingConnection();
     if (!socket) {
         return;
     }
@@ -98,24 +106,28 @@ void DiscordOauthService::onCallbackConnection() {
         finishListener();
 
         if (code.isEmpty()) {
-            emit loginStateChanged(QStringLiteral("error"), QStringLiteral("Redirect without authorization code."));
+            emit loginStateChanged(QStringLiteral("error"),
+                                   QStringLiteral("Redirect without authorization code."));
             return;
         }
 
-        emit loginStateChanged(QStringLiteral("code_captured"), QStringLiteral("Exchanging token..."));
+        emit loginStateChanged(QStringLiteral("code_captured"),
+                               QStringLiteral("Exchanging token..."));
         exchangeCodeForToken(code);
     });
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
 }
 
 void DiscordOauthService::finishListener() {
-    disconnect(&m_listener, &QTcpServer::newConnection, this, &DiscordOauthService::onCallbackConnection);
+    disconnect(&m_listener, &QTcpServer::newConnection, this,
+               &DiscordOauthService::onCallbackConnection);
     m_listener.close();
 }
 
-void DiscordOauthService::exchangeCodeForToken(const QString& code) {
+void DiscordOauthService::exchangeCodeForToken(const QString &code) {
     QNetworkRequest request{QUrl(QStringLiteral("https://discord.com/api/oauth2/token"))};
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/x-www-form-urlencoded"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,
+                      QStringLiteral("application/x-www-form-urlencoded"));
 
     QUrlQuery params;
     params.addQueryItem(QStringLiteral("client_id"), secret(kKeyClientId));
@@ -124,15 +136,18 @@ void DiscordOauthService::exchangeCodeForToken(const QString& code) {
     params.addQueryItem(QStringLiteral("code"), code);
     params.addQueryItem(QStringLiteral("redirect_uri"), QString::fromUtf8(kRedirectUri));
 
-    auto* reply = m_http->post(request, params.query(QUrl::FullyEncoded).toUtf8());
+    auto *reply = m_http->post(request, params.query(QUrl::FullyEncoded).toUtf8());
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         reply->deleteLater();
 
         const QByteArray payload = reply->readAll();
         if (reply->error() != QNetworkReply::NoError) {
-            infrastructure::Logger::instance().warn("Discord",
-                QString("Token exchange failed: %1 (%2)").arg(reply->errorString(), QString::fromUtf8(payload.left(200))));
-            emit loginStateChanged(QStringLiteral("error"), QStringLiteral("Token exchange failed: %1").arg(reply->errorString()));
+            infrastructure::Logger::instance().warn(
+                "Discord", QString("Token exchange failed: %1 (%2)")
+                               .arg(reply->errorString(), QString::fromUtf8(payload.left(200))));
+            emit loginStateChanged(
+                QStringLiteral("error"),
+                QStringLiteral("Token exchange failed: %1").arg(reply->errorString()));
             return;
         }
 
@@ -140,7 +155,8 @@ void DiscordOauthService::exchangeCodeForToken(const QString& code) {
         const QString accessToken = obj.value("access_token").toString();
         const QString refreshToken = obj.value("refresh_token").toString();
         if (accessToken.isEmpty()) {
-            emit loginStateChanged(QStringLiteral("error"), QStringLiteral("Response without access_token."));
+            emit loginStateChanged(QStringLiteral("error"),
+                                   QStringLiteral("Response without access_token."));
             return;
         }
 

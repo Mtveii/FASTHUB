@@ -19,18 +19,18 @@ class WebEmbedWidget : public QWidget {
 public:
     /// @param name Unique profile id ("discord", "steam", "telegram-web").
     /// @param homeUrl First page loaded (login or app start page).
-    WebEmbedWidget(const QString& name, const QString& homeUrl, QWidget* parent = nullptr);
+    WebEmbedWidget(const QString &name, const QString &homeUrl, QWidget *parent = nullptr);
 
     /// @brief Navigates back to the home URL.
     void goHome();
 
 private slots:
-    void onUrlChanged(const QUrl& url);
+    void onUrlChanged(const QUrl &url);
 
 private:
     QString m_name;
     QString m_homeUrl;
-    QWebEngineView* m_view = nullptr;
+    QWebEngineView *m_view = nullptr;
 };
 
 } // namespace fasthub::ui

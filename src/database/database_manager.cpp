@@ -21,7 +21,7 @@ namespace {
 /// This prevents user input from being interpreted as FTS5 operators
 /// (AND/OR/NOT/NEAR/*, column filters, etc.) which would otherwise either
 /// error out or change semantics.
-QString sanitizeFtsQuery(const std::string& raw) {
+QString sanitizeFtsQuery(const std::string &raw) {
     const QString text = QString::fromStdString(raw).simplified();
     if (text.isEmpty()) {
         return {};
@@ -29,7 +29,7 @@ QString sanitizeFtsQuery(const std::string& raw) {
 
     QStringList phrases;
     const QStringList tokens = text.split(' ', Qt::SkipEmptyParts);
-    for (const QString& token : tokens) {
+    for (const QString &token : tokens) {
         QString escaped = token;
         escaped.replace('"', QStringLiteral("\"\""));
         // Cap token length to avoid pathological inputs.
@@ -42,12 +42,13 @@ QString sanitizeFtsQuery(const std::string& raw) {
 }
 
 unsigned long long currentThreadId() {
-    return static_cast<unsigned long long>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    return static_cast<unsigned long long>(
+        std::hash<std::thread::id>{}(std::this_thread::get_id()));
 }
 
 } // namespace
 
-DatabaseManager& DatabaseManager::instance() {
+DatabaseManager &DatabaseManager::instance() {
     static DatabaseManager s_instance;
     return s_instance;
 }
@@ -78,7 +79,8 @@ QSqlDatabase DatabaseManager::connectionForThread() {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", name);
     db.setDatabaseName(m_dbPath);
     if (!db.open()) {
-        infrastructure::Logger::instance().error("DB", "Failed to open thread connection: " + db.lastError().text());
+        infrastructure::Logger::instance().error("DB", "Failed to open thread connection: " +
+                                                           db.lastError().text());
         return db; // invalid/unopened; callers check m_initialized and exec results
     }
     applyPragmas(db);
@@ -87,7 +89,7 @@ QSqlDatabase DatabaseManager::connectionForThread() {
     return db;
 }
 
-bool DatabaseManager::initialize(const QString& dbPath) {
+bool DatabaseManager::initialize(const QString &dbPath) {
     QFileInfo info(dbPath);
     QDir().mkpath(info.absolutePath());
     m_dbPath = dbPath;
@@ -102,7 +104,8 @@ bool DatabaseManager::initialize(const QString& dbPath) {
             return false;
         }
         m_initialized = true;
-        infrastructure::Logger::instance().info("DB", "Database initialized successfully at " + dbPath);
+        infrastructure::Logger::instance().info("DB",
+                                                "Database initialized successfully at " + dbPath);
     } else {
         // Idempotent call: make sure this thread has a live connection too.
         QSqlDatabase db = connectionForThread();
@@ -137,18 +140,19 @@ bool DatabaseManager::runMigrations(QSqlDatabase db) {
         "  is_outgoing INTEGER,"
         "  is_pending INTEGER"
         ");",
-        "CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id, timestamp);",
+        "CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id, "
+        "timestamp);",
         "CREATE VIRTUAL TABLE IF NOT EXISTS search_index_fts USING fts5("
         "  internal_id UNINDEXED,"
         "  source,"
         "  title,"
         "  body"
-        ");"
-    };
+        ");"};
 
-    for (const QString& qStr : migrationQueries) {
+    for (const QString &qStr : migrationQueries) {
         if (!query.exec(qStr)) {
-            infrastructure::Logger::instance().error("DB", "Migration failed: " + query.lastError().text());
+            infrastructure::Logger::instance().error("DB", "Migration failed: " +
+                                                               query.lastError().text());
             return false;
         }
     }
@@ -156,8 +160,9 @@ bool DatabaseManager::runMigrations(QSqlDatabase db) {
     return true;
 }
 
-bool DatabaseManager::setSetting(const QString& key, const QString& value) {
-    if (!m_initialized) return false;
+bool DatabaseManager::setSetting(const QString &key, const QString &value) {
+    if (!m_initialized)
+        return false;
     QSqlQuery query(connectionForThread());
     query.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (:key, :value);");
     query.bindValue(":key", key);
@@ -165,8 +170,9 @@ bool DatabaseManager::setSetting(const QString& key, const QString& value) {
     return query.exec();
 }
 
-std::optional<QString> DatabaseManager::getSetting(const QString& key) {
-    if (!m_initialized) return std::nullopt;
+std::optional<QString> DatabaseManager::getSetting(const QString &key) {
+    if (!m_initialized)
+        return std::nullopt;
     QSqlQuery query(connectionForThread());
     query.prepare("SELECT value FROM settings WHERE key = :key;");
     query.bindValue(":key", key);
@@ -177,34 +183,40 @@ std::optional<QString> DatabaseManager::getSetting(const QString& key) {
     return query.value(0).toString();
 }
 
-bool DatabaseManager::saveConversations(const std::vector<core::Conversation>& conversations) {
-    if (!m_initialized || conversations.empty()) return false;
+bool DatabaseManager::saveConversations(const std::vector<core::Conversation> &conversations) {
+    if (!m_initialized || conversations.empty())
+        return false;
 
     QSqlDatabase db = connectionForThread();
     if (!db.transaction()) {
-        infrastructure::Logger::instance().error("DB", "Failed to start transaction: " + db.lastError().text());
+        infrastructure::Logger::instance().error("DB", "Failed to start transaction: " +
+                                                           db.lastError().text());
         return false;
     }
 
     QSqlQuery query(db);
-    query.prepare("INSERT OR REPLACE INTO conversations (internal_id, title, last_message_text, last_message_timestamp, unread_count) "
-                  "VALUES (:internal_id, :title, :last_message_text, :last_message_timestamp, :unread_count);");
+    query.prepare("INSERT OR REPLACE INTO conversations (internal_id, title, last_message_text, "
+                  "last_message_timestamp, unread_count) "
+                  "VALUES (:internal_id, :title, :last_message_text, :last_message_timestamp, "
+                  ":unread_count);");
 
-    for (const auto& conv : conversations) {
+    for (const auto &conv : conversations) {
         query.bindValue(":internal_id", QString::fromStdString(conv.internalId));
         query.bindValue(":title", QString::fromStdString(conv.title));
         query.bindValue(":last_message_text", QString::fromStdString(conv.lastMessageText));
         query.bindValue(":last_message_timestamp", static_cast<qint64>(conv.lastMessageTimestamp));
         query.bindValue(":unread_count", conv.unreadCount);
         if (!query.exec()) {
-            infrastructure::Logger::instance().error("DB", "saveConversations failed: " + query.lastError().text());
+            infrastructure::Logger::instance().error("DB", "saveConversations failed: " +
+                                                               query.lastError().text());
             db.rollback();
             return false;
         }
     }
 
     if (!db.commit()) {
-        infrastructure::Logger::instance().error("DB", "saveConversations commit failed: " + db.lastError().text());
+        infrastructure::Logger::instance().error("DB", "saveConversations commit failed: " +
+                                                           db.lastError().text());
         db.rollback();
         return false;
     }
@@ -213,11 +225,14 @@ bool DatabaseManager::saveConversations(const std::vector<core::Conversation>& c
 
 std::vector<core::Conversation> DatabaseManager::getConversations() {
     std::vector<core::Conversation> result;
-    if (!m_initialized) return result;
+    if (!m_initialized)
+        return result;
 
     QSqlQuery query(connectionForThread());
-    if (!query.exec("SELECT internal_id, title, last_message_text, last_message_timestamp, unread_count FROM conversations ORDER BY last_message_timestamp DESC;")) {
-        infrastructure::Logger::instance().error("DB", "getConversations failed: " + query.lastError().text());
+    if (!query.exec("SELECT internal_id, title, last_message_text, last_message_timestamp, "
+                    "unread_count FROM conversations ORDER BY last_message_timestamp DESC;")) {
+        infrastructure::Logger::instance().error("DB", "getConversations failed: " +
+                                                           query.lastError().text());
         return result;
     }
 
@@ -234,12 +249,15 @@ std::vector<core::Conversation> DatabaseManager::getConversations() {
     return result;
 }
 
-bool DatabaseManager::saveMessage(const core::Message& message, const std::string& source) {
-    if (!m_initialized) return false;
+bool DatabaseManager::saveMessage(const core::Message &message, const std::string &source) {
+    if (!m_initialized)
+        return false;
 
     QSqlQuery query(connectionForThread());
-    query.prepare("INSERT OR REPLACE INTO messages (internal_id, conversation_id, sender_name, text, timestamp, is_outgoing, is_pending) "
-                  "VALUES (:internal_id, :conversation_id, :sender_name, :text, :timestamp, :is_outgoing, :is_pending);");
+    query.prepare("INSERT OR REPLACE INTO messages (internal_id, conversation_id, sender_name, "
+                  "text, timestamp, is_outgoing, is_pending) "
+                  "VALUES (:internal_id, :conversation_id, :sender_name, :text, :timestamp, "
+                  ":is_outgoing, :is_pending);");
     query.bindValue(":internal_id", QString::fromStdString(message.internalId));
     query.bindValue(":conversation_id", QString::fromStdString(message.conversationId));
     query.bindValue(":sender_name", QString::fromStdString(message.senderName));
@@ -249,29 +267,34 @@ bool DatabaseManager::saveMessage(const core::Message& message, const std::strin
     query.bindValue(":is_pending", message.isPending ? 1 : 0);
 
     if (!query.exec()) {
-        infrastructure::Logger::instance().error("DB", "saveMessage failed: " + query.lastError().text());
+        infrastructure::Logger::instance().error("DB",
+                                                 "saveMessage failed: " + query.lastError().text());
         return false;
     }
 
     // Keep FTS index consistent with the messages table. Failure is logged
     // but does not invalidate the saved message itself.
     if (!indexDocumentLocked(message.internalId, source, message.senderName, message.text)) {
-        infrastructure::Logger::instance().warn("DB", "FTS indexing failed for message: " + QString::fromStdString(message.internalId));
+        infrastructure::Logger::instance().warn(
+            "DB", "FTS indexing failed for message: " + QString::fromStdString(message.internalId));
     }
     return true;
 }
 
-std::vector<core::Message> DatabaseManager::getMessages(const std::string& conversationId) {
+std::vector<core::Message> DatabaseManager::getMessages(const std::string &conversationId) {
     std::vector<core::Message> result;
-    if (!m_initialized) return result;
+    if (!m_initialized)
+        return result;
 
     QSqlQuery query(connectionForThread());
-    query.prepare("SELECT internal_id, conversation_id, sender_name, text, timestamp, is_outgoing, is_pending "
+    query.prepare("SELECT internal_id, conversation_id, sender_name, text, timestamp, is_outgoing, "
+                  "is_pending "
                   "FROM messages WHERE conversation_id = :conversation_id ORDER BY timestamp ASC;");
     query.bindValue(":conversation_id", QString::fromStdString(conversationId));
 
     if (!query.exec()) {
-        infrastructure::Logger::instance().error("DB", "getMessages failed: " + query.lastError().text());
+        infrastructure::Logger::instance().error("DB",
+                                                 "getMessages failed: " + query.lastError().text());
         return result;
     }
 
@@ -290,14 +313,18 @@ std::vector<core::Message> DatabaseManager::getMessages(const std::string& conve
     return result;
 }
 
-bool DatabaseManager::indexDocument(const std::string& internalId, const std::string& source, const std::string& title, const std::string& body) {
-    if (!m_initialized) return false;
+bool DatabaseManager::indexDocument(const std::string &internalId, const std::string &source,
+                                    const std::string &title, const std::string &body) {
+    if (!m_initialized)
+        return false;
     return indexDocumentLocked(internalId, source, title, body);
 }
 
-bool DatabaseManager::indexDocumentLocked(const std::string& internalId, const std::string& source, const std::string& title, const std::string& body) {
+bool DatabaseManager::indexDocumentLocked(const std::string &internalId, const std::string &source,
+                                          const std::string &title, const std::string &body) {
     QSqlQuery query(connectionForThread());
-    query.prepare("INSERT OR REPLACE INTO search_index_fts (internal_id, source, title, body) VALUES (:id, :source, :title, :body);");
+    query.prepare("INSERT OR REPLACE INTO search_index_fts (internal_id, source, title, body) "
+                  "VALUES (:id, :source, :title, :body);");
     query.bindValue(":id", QString::fromStdString(internalId));
     query.bindValue(":source", QString::fromStdString(source));
     query.bindValue(":title", QString::fromStdString(title));
@@ -305,9 +332,10 @@ bool DatabaseManager::indexDocumentLocked(const std::string& internalId, const s
     return query.exec();
 }
 
-std::vector<core::SearchResult> DatabaseManager::searchFts(const std::string& query) {
+std::vector<core::SearchResult> DatabaseManager::searchFts(const std::string &query) {
     std::vector<core::SearchResult> results;
-    if (!m_initialized || query.empty()) return results;
+    if (!m_initialized || query.empty())
+        return results;
 
     const QString sanitized = sanitizeFtsQuery(query);
     if (sanitized.isEmpty()) {
@@ -315,7 +343,8 @@ std::vector<core::SearchResult> DatabaseManager::searchFts(const std::string& qu
     }
 
     QSqlQuery q(connectionForThread());
-    q.prepare("SELECT internal_id, source, title, body FROM search_index_fts WHERE search_index_fts MATCH :query LIMIT 50;");
+    q.prepare("SELECT internal_id, source, title, body FROM search_index_fts WHERE "
+              "search_index_fts MATCH :query LIMIT 50;");
     q.bindValue(":query", sanitized);
 
     if (!q.exec()) {

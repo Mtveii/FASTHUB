@@ -10,9 +10,10 @@ namespace FileLocator = fasthub::workspace::FileLocator;
 
 namespace {
 
-bool writeFileRaw(const QString& path, const QByteArray& content) {
+bool writeFileRaw(const QString &path, const QByteArray &content) {
     QFile f(path);
-    if (!f.open(QIODevice::WriteOnly)) return false;
+    if (!f.open(QIODevice::WriteOnly))
+        return false;
     return f.write(content) == content.size();
 }
 
@@ -32,8 +33,7 @@ private:
     QTemporaryDir m_root;
 };
 
-void FileLocatorTest::initTestCase()
-{
+void FileLocatorTest::initTestCase() {
     QVERIFY(m_root.isValid());
     QVERIFY(QDir(m_root.path()).mkpath("projects/nested"));
     QVERIFY(writeFileRaw(m_root.filePath("top.md"), "# Top"));
@@ -42,8 +42,7 @@ void FileLocatorTest::initTestCase()
     QVERIFY(writeFileRaw(m_root.filePath("plain.txt"), "plain"));
 }
 
-void FileLocatorTest::findsExactNameRecursively()
-{
+void FileLocatorTest::findsExactNameRecursively() {
     // Exact full name anywhere under the root (nested dirs included).
     QCOMPARE(FileLocator::findFileByName(m_root.path(), "idea.md"),
              m_root.filePath("projects/nested/idea.md"));
@@ -52,20 +51,17 @@ void FileLocatorTest::findsExactNameRecursively()
              m_root.filePath("projects/nested/idea.md"));
 }
 
-void FileLocatorTest::fallsBackToBaseNameAndMd()
-{
+void FileLocatorTest::fallsBackToBaseNameAndMd() {
     // Obsidian-style: [[deep]] -> deep.html by complete base name match.
     QCOMPARE(FileLocator::findFileByName(m_root.path(), "deep"),
              m_root.filePath("projects/deep.html"));
     // name -> name + ".md" fallback when nothing matches better.
-    QCOMPARE(FileLocator::findFileByName(m_root.path(), "top"),
-             m_root.filePath("top.md"));
+    QCOMPARE(FileLocator::findFileByName(m_root.path(), "top"), m_root.filePath("top.md"));
     // Unknown note returns empty.
     QVERIFY(FileLocator::findFileByName(m_root.path(), "no-such-note").isEmpty());
 }
 
-void FileLocatorTest::rejectsPathsAndMissingRoots()
-{
+void FileLocatorTest::rejectsPathsAndMissingRoots() {
     // Wiki targets are plain names: path separators must be rejected.
     QVERIFY(FileLocator::findFileByName(m_root.path(), "../outside").isEmpty());
     QVERIFY(FileLocator::findFileByName(m_root.path(), "sub/dir.md").isEmpty());
@@ -73,11 +69,9 @@ void FileLocatorTest::rejectsPathsAndMissingRoots()
     QVERIFY(FileLocator::findFileByName("Z:/missing/root", "x.md").isEmpty());
 }
 
-void FileLocatorTest::createIfMissingCreatesMd()
-{
+void FileLocatorTest::createIfMissingCreatesMd() {
     // Existing notes resolve without creation.
-    QCOMPARE(FileLocator::createIfMissing(m_root.path(), "top.md"),
-             m_root.filePath("top.md"));
+    QCOMPARE(FileLocator::createIfMissing(m_root.path(), "top.md"), m_root.filePath("top.md"));
 
     // Missing note is created as .md in the workspace root.
     const QString created = FileLocator::createIfMissing(m_root.path(), "brand new");

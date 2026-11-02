@@ -27,7 +27,7 @@ public:
     /// name. Image-name lookups are cached per pid for the duration of one
     /// call so a full-system scan does not run OpenProcess +
     /// QueryFullProcessImageNameW per window on every poll tick.
-    static HWND findWindow(const Query& query);
+    static HWND findWindow(const Query &query);
 
     /// @brief True when the window finished initializing.
     ///
@@ -38,10 +38,10 @@ public:
     static bool isWindowTitleReady(HWND hwnd);
 
     /// @brief True when any process with the given image name is running.
-    static bool isProcessRunning(const QString& imageName);
+    static bool isProcessRunning(const QString &imageName);
 
 private:
-    static bool titleMatchesReadyState(const wchar_t* title, size_t len);
+    static bool titleMatchesReadyState(const wchar_t *title, size_t len);
 };
 
 } // namespace fasthub::ui::ayu

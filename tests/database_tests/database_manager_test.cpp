@@ -10,7 +10,7 @@ using fasthub::database::DatabaseManager;
 
 namespace {
 
-Conversation makeConversation(const std::string& externalId, const std::string& title, qint64 ts) {
+Conversation makeConversation(const std::string &externalId, const std::string &title, qint64 ts) {
     Conversation c;
     c.internalId = fasthub::core::IdUtils::makeInternalId("test", externalId);
     c.title = title;
@@ -20,7 +20,7 @@ Conversation makeConversation(const std::string& externalId, const std::string& 
     return c;
 }
 
-Message makeMessage(const std::string& convId, const std::string& text, qint64 ts) {
+Message makeMessage(const std::string &convId, const std::string &text, qint64 ts) {
     Message m;
     m.internalId = fasthub::core::IdUtils::makeInternalId("test", std::to_string(ts));
     m.conversationId = convId;
@@ -48,8 +48,7 @@ private:
     QTemporaryDir m_tempDir;
 };
 
-void DatabaseManagerTest::initTestCase()
-{
+void DatabaseManagerTest::initTestCase() {
     QVERIFY2(m_tempDir.isValid(), "QTemporaryDir must be valid");
     const QString dbPath = m_tempDir.filePath("test.sqlite");
     QVERIFY(DatabaseManager::instance().initialize(dbPath));
@@ -57,17 +56,15 @@ void DatabaseManagerTest::initTestCase()
     QVERIFY(DatabaseManager::instance().initialize(dbPath));
 }
 
-void DatabaseManagerTest::migrationsAndSettings()
-{
-    auto& db = DatabaseManager::instance();
+void DatabaseManagerTest::migrationsAndSettings() {
+    auto &db = DatabaseManager::instance();
     QVERIFY(db.setSetting("k", "v"));
     QCOMPARE(db.getSetting("k").value_or(QString()), QString("v"));
     QVERIFY(!db.getSetting("missing").has_value());
 }
 
-void DatabaseManagerTest::conversationCrudRoundTrip()
-{
-    auto& db = DatabaseManager::instance();
+void DatabaseManagerTest::conversationCrudRoundTrip() {
+    auto &db = DatabaseManager::instance();
     const auto conv = makeConversation("c1", "Chat One", 1000);
     QVERIFY(db.saveConversations({conv}));
 
@@ -78,9 +75,8 @@ void DatabaseManagerTest::conversationCrudRoundTrip()
     QCOMPARE(all.front().unreadCount, 1);
 }
 
-void DatabaseManagerTest::messageSaveLoadWithFtsIndexing()
-{
-    auto& db = DatabaseManager::instance();
+void DatabaseManagerTest::messageSaveLoadWithFtsIndexing() {
+    auto &db = DatabaseManager::instance();
     const std::string convId = fasthub::core::IdUtils::makeInternalId("test", "c1");
 
     QVERIFY(db.saveMessage(makeMessage(convId, "hello world from telegram", 100), "telegram"));
@@ -95,9 +91,8 @@ void DatabaseManagerTest::messageSaveLoadWithFtsIndexing()
     QVERIFY(!hits.empty());
 }
 
-void DatabaseManagerTest::ftsSanitizedQueryDoesNotError()
-{
-    auto& db = DatabaseManager::instance();
+void DatabaseManagerTest::ftsSanitizedQueryDoesNotError() {
+    auto &db = DatabaseManager::instance();
 
     // FTS operators and quote characters must not produce errors or crash.
     const auto r1 = db.searchFts("\"hello\" OR * NEAR (");

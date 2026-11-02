@@ -8,7 +8,7 @@ namespace fasthub::core {
 class ViewModelBase : public QObject {
     Q_OBJECT
 public:
-    explicit ViewModelBase(QObject* parent = nullptr) : QObject(parent) {}
+    explicit ViewModelBase(QObject *parent = nullptr) : QObject(parent) {}
     ~ViewModelBase() override = default;
 };
 

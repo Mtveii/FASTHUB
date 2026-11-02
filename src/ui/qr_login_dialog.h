@@ -18,14 +18,15 @@ public:
     /// @param title Window title (e.g. "Telegram - QR Login").
     /// @param loginUrl Payload encoded into the QR image.
     /// @param note Human-readable explanation shown under the code.
-    QrLoginDialog(const QString& title, const QString& loginUrl, const QString& note, QWidget* parent = nullptr);
+    QrLoginDialog(const QString &title, const QString &loginUrl, const QString &note,
+                  QWidget *parent = nullptr);
 
     /// @brief Renders @p text as a QR pixmap (black on transparent), scaled
     ///        to @p sizePx. Returns a null pixmap on encoding failure.
-    static QPixmap makeQrPixmap(const QString& text, int sizePx);
+    static QPixmap makeQrPixmap(const QString &text, int sizePx);
 
 private:
-    void setupUi(const QString& note, const QPixmap& qr);
+    void setupUi(const QString &note, const QPixmap &qr);
 };
 
 } // namespace fasthub::ui

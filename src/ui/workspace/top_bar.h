@@ -2,8 +2,7 @@
 #include <QWidget>
 #include <QToolButton>
 
-class TopBar : public QWidget
-{
+class TopBar : public QWidget {
     Q_OBJECT
 public:
     explicit TopBar(QWidget *parent = nullptr);

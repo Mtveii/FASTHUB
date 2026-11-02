@@ -11,23 +11,29 @@ namespace fasthub::ui::ayu {
 /// shared members, which closes the races between zombie-cleanup, polling
 /// and attach paths.
 enum class EmbedState {
-    Idle,           // Nothing running, overlay offers launch
-    Launching,      // QProcess::start() issued, waiting for the process
-    PollingWindow,  // Process alive, waiting for its ready top-level window
-    Attached,       // HWND captured, geometry/visibility sync active
-    ZombieCleanup,  // Killing a windowless orphan before relaunch
-    ShuttingDown,   // Teardown in progress; ignore all events
+    Idle,          // Nothing running, overlay offers launch
+    Launching,     // QProcess::start() issued, waiting for the process
+    PollingWindow, // Process alive, waiting for its ready top-level window
+    Attached,      // HWND captured, geometry/visibility sync active
+    ZombieCleanup, // Killing a windowless orphan before relaunch
+    ShuttingDown,  // Teardown in progress; ignore all events
 };
 
 /// @brief Human-readable state name (state-transition logging).
-inline const char* stateName(EmbedState s) {
+inline const char *stateName(EmbedState s) {
     switch (s) {
-        case EmbedState::Idle:          return "Idle";
-        case EmbedState::Launching:     return "Launching";
-        case EmbedState::PollingWindow: return "PollingWindow";
-        case EmbedState::Attached:      return "Attached";
-        case EmbedState::ZombieCleanup: return "ZombieCleanup";
-        case EmbedState::ShuttingDown:  return "ShuttingDown";
+    case EmbedState::Idle:
+        return "Idle";
+    case EmbedState::Launching:
+        return "Launching";
+    case EmbedState::PollingWindow:
+        return "PollingWindow";
+    case EmbedState::Attached:
+        return "Attached";
+    case EmbedState::ZombieCleanup:
+        return "ZombieCleanup";
+    case EmbedState::ShuttingDown:
+        return "ShuttingDown";
     }
     return "?";
 }
@@ -53,7 +59,7 @@ struct VisibilityInput {
 /// Show only when the tab is on screen, FastHub is not minimized and either
 /// FastHub or AyuGram itself has user focus. Pure function - covered by
 /// unit tests in telegram_tests.
-inline bool shouldShowEmbed(const VisibilityInput& in) {
+inline bool shouldShowEmbed(const VisibilityInput &in) {
     return in.tabVisible && !in.iconic && (in.appActive || in.ayuActive);
 }
 

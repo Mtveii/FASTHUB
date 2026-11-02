@@ -2,8 +2,7 @@
 #include <QWidget>
 #include <QToolButton>
 
-class FileListToolbar : public QWidget
-{
+class FileListToolbar : public QWidget {
     Q_OBJECT
 public:
     explicit FileListToolbar(QWidget *parent = nullptr);
@@ -14,8 +13,8 @@ public slots:
 signals:
     void newNoteRequested();
     void newFolderRequested();
-    void sortMenuRequested();     // откроет QMenu с вариантами сортировки
-    void sortRequested(const QString& mode);
+    void sortMenuRequested(); // откроет QMenu с вариантами сортировки
+    void sortRequested(const QString &mode);
     void layoutToggleRequested(); // переключение вида списка
     void closeRequested();
     void quickSwitcherRequested();

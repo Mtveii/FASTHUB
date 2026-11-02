@@ -10,7 +10,8 @@
 
 namespace fasthub::ui {
 
-SteamWidget::SteamWidget(std::shared_ptr<providers::steam::SteamProvider> steamProvider, QWidget* parent)
+SteamWidget::SteamWidget(std::shared_ptr<providers::steam::SteamProvider> steamProvider,
+                         QWidget *parent)
     : QWidget(parent), m_steamProvider(steamProvider) {
     setupUi();
     loadFriends();
@@ -27,15 +28,15 @@ SteamWidget::SteamWidget(std::shared_ptr<providers::steam::SteamProvider> steamP
     connect(&m_uiRefreshTimer, &QTimer::timeout, this, &SteamWidget::loadFriends);
 
     if (m_steamProvider) {
-        connect(m_steamProvider.get(), &providers::steam::SteamProvider::presenceUpdated,
-                this, &SteamWidget::onPresenceUpdated);
+        connect(m_steamProvider.get(), &providers::steam::SteamProvider::presenceUpdated, this,
+                &SteamWidget::onPresenceUpdated);
     }
 }
 
 void SteamWidget::setupUi() {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
 
-    auto* header = new QLabel("Steam Friends & Status", this);
+    auto *header = new QLabel("Steam Friends & Status", this);
     header->setProperty("heading", true);
     layout->addWidget(header);
 
@@ -46,18 +47,20 @@ void SteamWidget::setupUi() {
     m_friendsListWidget = new QListWidget(this);
     layout->addWidget(m_friendsListWidget);
 
-    auto* row = new QHBoxLayout();
-    auto* settingsButton = new QPushButton("Web API Setup...", this);
+    auto *row = new QHBoxLayout();
+    auto *settingsButton = new QPushButton("Web API Setup...", this);
     connect(settingsButton, &QPushButton::clicked, this, &SteamWidget::onSettingsClicked);
     row->addWidget(settingsButton);
     row->addStretch();
     layout->addLayout(row);
 }
 
-QIcon SteamWidget::statusDot(const providers::steam::SteamPresence& p) const {
-    QColor color = QColor("#8A93A6");               // offline - muted
-    if (p.isInGame()) color = QColor("#66C0F0");    // in-game - steam blue
-    else if (p.isOnline()) color = QColor("#7BD88F"); // online - green
+QIcon SteamWidget::statusDot(const providers::steam::SteamPresence &p) const {
+    QColor color = QColor("#8A93A6"); // offline - muted
+    if (p.isInGame())
+        color = QColor("#66C0F0"); // in-game - steam blue
+    else if (p.isOnline())
+        color = QColor("#7BD88F"); // online - green
 
     QPixmap pm(14, 14);
     pm.fill(Qt::transparent);
@@ -70,7 +73,8 @@ QIcon SteamWidget::statusDot(const providers::steam::SteamPresence& p) const {
 }
 
 void SteamWidget::loadFriends() {
-    if (!m_steamProvider) return;
+    if (!m_steamProvider)
+        return;
 
     m_friendsListWidget->clear();
 
@@ -79,11 +83,12 @@ void SteamWidget::loadFriends() {
         m_statusLabel->setText("Mock mode - configure the Web API key to see real friends.");
         // Honest demo rows until the module is configured.
         const std::vector<providers::steam::SteamPresence> demo = {
-            {QStringLiteral("demo:1"), QStringLiteral("Gaben"), 1, QStringLiteral("Counter-Strike 2")},
+            {QStringLiteral("demo:1"), QStringLiteral("Gaben"), 1,
+             QStringLiteral("Counter-Strike 2")},
             {QStringLiteral("demo:2"), QStringLiteral("ValveFan99"), 0, QString()},
         };
-        for (const auto& p : demo) {
-            auto* item = new QListWidgetItem(m_friendsListWidget);
+        for (const auto &p : demo) {
+            auto *item = new QListWidgetItem(m_friendsListWidget);
             item->setText(QString("%1 — %2").arg(p.personaName, p.presenceLine()));
             item->setIcon(statusDot(p));
         }
@@ -94,14 +99,14 @@ void SteamWidget::loadFriends() {
 
     const auto snapshot = m_steamProvider->presenceSnapshot();
     for (auto it = snapshot.constBegin(); it != snapshot.constEnd(); ++it) {
-        const auto& p = it.value();
-        auto* item = new QListWidgetItem(m_friendsListWidget);
+        const auto &p = it.value();
+        auto *item = new QListWidgetItem(m_friendsListWidget);
         item->setText(QString("%1 — %2").arg(p.personaName, p.presenceLine()));
         item->setIcon(statusDot(p));
     }
 }
 
-void SteamWidget::onPresenceUpdated(const QString& status) {
+void SteamWidget::onPresenceUpdated(const QString &status) {
     Q_UNUSED(status);
     m_uiRefreshTimer.start();
 }

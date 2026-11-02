@@ -8,30 +8,33 @@
 namespace fasthub::core::canvas {
 
 /// @brief Side of a node where an edge connects.
-enum class CanvasSide {
-    None,
-    Top,
-    Right,
-    Bottom,
-    Left
-};
+enum class CanvasSide { None, Top, Right, Bottom, Left };
 
-inline CanvasSide sideFromString(const QString& s) {
+inline CanvasSide sideFromString(const QString &s) {
     const QString v = s.trimmed().toLower();
-    if (v == "top") return CanvasSide::Top;
-    if (v == "right") return CanvasSide::Right;
-    if (v == "bottom") return CanvasSide::Bottom;
-    if (v == "left") return CanvasSide::Left;
+    if (v == "top")
+        return CanvasSide::Top;
+    if (v == "right")
+        return CanvasSide::Right;
+    if (v == "bottom")
+        return CanvasSide::Bottom;
+    if (v == "left")
+        return CanvasSide::Left;
     return CanvasSide::None;
 }
 
 inline QString sideToString(CanvasSide s) {
     switch (s) {
-        case CanvasSide::Top: return "top";
-        case CanvasSide::Right: return "right";
-        case CanvasSide::Bottom: return "bottom";
-        case CanvasSide::Left: return "left";
-        default: return "";
+    case CanvasSide::Top:
+        return "top";
+    case CanvasSide::Right:
+        return "right";
+    case CanvasSide::Bottom:
+        return "bottom";
+    case CanvasSide::Left:
+        return "left";
+    default:
+        return "";
     }
 }
 

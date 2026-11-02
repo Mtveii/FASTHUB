@@ -8,18 +8,17 @@
 
 namespace fasthub::sync {
 
-SyncService::SyncService(std::shared_ptr<core::IChatProvider> provider, QObject* parent)
+SyncService::SyncService(std::shared_ptr<core::IChatProvider> provider, QObject *parent)
     : QObject(parent), m_provider(provider) {
     connect(&m_timer, &QTimer::timeout, this, &SyncService::performSync);
 }
 
-SyncService::~SyncService() {
-    stopSync();
-}
+SyncService::~SyncService() { stopSync(); }
 
 void SyncService::startSync(int intervalMs) {
     m_timer.start(intervalMs);
-    infrastructure::Logger::instance().info("Sync", "SyncService started with interval " + QString::number(intervalMs) + "ms");
+    infrastructure::Logger::instance().info("Sync", "SyncService started with interval " +
+                                                        QString::number(intervalMs) + "ms");
 }
 
 void SyncService::stopSync() {
@@ -29,12 +28,11 @@ void SyncService::stopSync() {
     }
 }
 
-void SyncService::syncNow() {
-    performSync();
-}
+void SyncService::syncNow() { performSync(); }
 
 void SyncService::performSync() {
-    if (!m_provider) return;
+    if (!m_provider)
+        return;
 
     // Skip ticks while the previous sync is still running (no task pile-up).
     bool expected = false;
@@ -44,9 +42,9 @@ void SyncService::performSync() {
 
     // Copy the provider so the worker never touches `this`.
     auto provider = m_provider;
-    auto* database = &database::DatabaseManager::instance();
+    auto *database = &database::DatabaseManager::instance();
 
-    auto* watcher = new QFutureWatcher<void>(this);
+    auto *watcher = new QFutureWatcher<void>(this);
     connect(watcher, &QFutureWatcher<void>::finished, this, [this, watcher]() {
         watcher->deleteLater();
         m_syncInProgress.store(false);
@@ -57,10 +55,12 @@ void SyncService::performSync() {
         try {
             auto convs = provider->getConversations();
             database->saveConversations(convs);
-        } catch (const std::exception& e) {
-            infrastructure::Logger::instance().error("Sync", QString("Background sync failed: %1").arg(e.what()));
+        } catch (const std::exception &e) {
+            infrastructure::Logger::instance().error(
+                "Sync", QString("Background sync failed: %1").arg(e.what()));
         } catch (...) {
-            infrastructure::Logger::instance().error("Sync", "Background sync failed with unknown exception.");
+            infrastructure::Logger::instance().error(
+                "Sync", "Background sync failed with unknown exception.");
         }
     }));
 }

@@ -8,7 +8,7 @@ namespace fasthub::plugins {
 
 class PluginManager {
 public:
-    static PluginManager& instance();
+    static PluginManager &instance();
 
     bool registerPlugin(std::shared_ptr<core::IPlugin> plugin, bool approvedByUser);
     std::vector<core::PluginManifest> getLoadedPlugins() const;

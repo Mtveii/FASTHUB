@@ -16,7 +16,7 @@ namespace fasthub::ui {
 class SetupDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit SetupDialog(QWidget* parent = nullptr);
+    explicit SetupDialog(QWidget *parent = nullptr);
 
     /// @brief Directory chosen by the user (valid after exec() returns Accepted).
     QString workspacePath() const;
@@ -28,9 +28,9 @@ private slots:
 private:
     void setupUi();
 
-    QLineEdit* m_pathEdit;
-    QPushButton* m_browseButton;
-    QPushButton* m_okButton;
+    QLineEdit *m_pathEdit;
+    QPushButton *m_browseButton;
+    QPushButton *m_okButton;
 };
 
 } // namespace fasthub::ui

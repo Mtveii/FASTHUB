@@ -19,22 +19,22 @@ namespace fasthub::ui {
 class CalendarWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit CalendarWidget(QString workspacePath, QWidget* parent = nullptr);
+    explicit CalendarWidget(QString workspacePath, QWidget *parent = nullptr);
 
 private slots:
-    void onDateSelected(const QDate& date);
+    void onDateSelected(const QDate &date);
     void onAddTask();
 
 private:
-    void loadTasksForDate(const QDate& date);
-    QString dailyNotePath(const QDate& date) const;
+    void loadTasksForDate(const QDate &date);
+    QString dailyNotePath(const QDate &date) const;
 
     QString m_workspacePath;
-    QCalendarWidget* m_calendar;
-    QLabel* m_selectedDateLabel;
-    QListWidget* m_taskListWidget;
-    QLineEdit* m_taskInput;
-    QPushButton* m_addTaskBtn;
+    QCalendarWidget *m_calendar;
+    QLabel *m_selectedDateLabel;
+    QListWidget *m_taskListWidget;
+    QLineEdit *m_taskInput;
+    QPushButton *m_addTaskBtn;
     QDate m_currentDate;
 };
 

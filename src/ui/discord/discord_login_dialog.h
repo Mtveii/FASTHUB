@@ -14,20 +14,21 @@ namespace fasthub::ui {
 class DiscordLoginDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit DiscordLoginDialog(std::shared_ptr<providers::discord::DiscordOauthService> service, QWidget* parent = nullptr);
+    explicit DiscordLoginDialog(std::shared_ptr<providers::discord::DiscordOauthService> service,
+                                QWidget *parent = nullptr);
 
 private slots:
     void onSaveCredentials();
     void onStartLogin();
-    void onStateChanged(const QString& step, const QString& details);
+    void onStateChanged(const QString &step, const QString &details);
 
 private:
     void setupUi();
 
     std::shared_ptr<providers::discord::DiscordOauthService> m_service;
-    QLabel* m_statusLabel;
-    QLineEdit* m_clientIdEdit;
-    QLineEdit* m_clientSecretEdit;
+    QLabel *m_statusLabel;
+    QLineEdit *m_clientIdEdit;
+    QLineEdit *m_clientSecretEdit;
 };
 
 } // namespace fasthub::ui

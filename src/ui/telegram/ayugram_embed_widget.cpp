@@ -27,16 +27,16 @@ namespace {
 // WINVER >= 0x0500 in older SDK headers and we do not want the embed
 // module to depend on project-wide WINVER settings.
 constexpr DWORD kEvtLocationChange = 0x800B; // EVENT_OBJECT_LOCATIONCHANGE
-constexpr DWORD kEvtStyleChange   = 0x8011; // EVENT_OBJECT_STYLECHANGE
-constexpr LONG   kObjIdWindow     = 0xFFFF; // OBJID_WINDOW
-constexpr LONG   kIndexContainer  = 0;      // INDEXID_CONTAINER
-constexpr int    kGwlHwndParent   = -8;     // GWL_HWNDPARENT (sets OWNER)
+constexpr DWORD kEvtStyleChange = 0x8011;    // EVENT_OBJECT_STYLECHANGE
+constexpr LONG kObjIdWindow = 0xFFFF;        // OBJID_WINDOW
+constexpr LONG kIndexContainer = 0;          // INDEXID_CONTAINER
+constexpr int kGwlHwndParent = -8;           // GWL_HWNDPARENT (sets OWNER)
 
 /// @brief Global WinEvent callback: routes to the active widget instance.
 /// The Telegram tab is single-instance, so static routing is safe.
-void CALLBACK winEventThunk(HWINEVENTHOOK, DWORD event, HWND hwnd,
-                            LONG idObject, LONG idChild, DWORD, DWORD) {
-    auto* self = AyuGramEmbedWidget::s_activeInstanceForCallback();
+void CALLBACK winEventThunk(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG idObject, LONG idChild,
+                            DWORD, DWORD) {
+    auto *self = AyuGramEmbedWidget::s_activeInstanceForCallback();
     if (!self || idObject != kObjIdWindow || idChild != kIndexContainer) {
         return;
     }
@@ -52,9 +52,9 @@ void CALLBACK winEventThunk(HWINEVENTHOOK, DWORD event, HWND hwnd,
 
 } // namespace
 
-AyuGramEmbedWidget* AyuGramEmbedWidget::s_activeInstance = nullptr;
+AyuGramEmbedWidget *AyuGramEmbedWidget::s_activeInstance = nullptr;
 
-AyuGramEmbedWidget::AyuGramEmbedWidget(QWidget* parent) : QWidget(parent) {
+AyuGramEmbedWidget::AyuGramEmbedWidget(QWidget *parent) : QWidget(parent) {
     setupUi();
     ensureJobObject();
     s_activeInstance = this;
@@ -75,7 +75,7 @@ AyuGramEmbedWidget::~AyuGramEmbedWidget() {
 }
 
 void AyuGramEmbedWidget::setupUi() {
-    auto* layout = new QVBoxLayout(this);
+    auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_stack = new QStackedWidget(this);
@@ -83,21 +83,22 @@ void AyuGramEmbedWidget::setupUi() {
 
     // Page 0: status overlay (launching / not running / relaunch).
     m_overlay = new QWidget(this);
-    auto* overlayLayout = new QVBoxLayout(m_overlay);
+    auto *overlayLayout = new QVBoxLayout(m_overlay);
     overlayLayout->addStretch();
     m_overlayText = new QLabel(QStringLiteral("Launching FastHub_Telegram..."), m_overlay);
     m_overlayText->setAlignment(Qt::AlignCenter);
     overlayLayout->addWidget(m_overlayText);
 
-    auto* buttons = new QHBoxLayout();
+    auto *buttons = new QHBoxLayout();
     buttons->addStretch();
-    auto* relaunch = new QPushButton(QStringLiteral("Launch / Reattach FastHub_Telegram"), m_overlay);
+    auto *relaunch =
+        new QPushButton(QStringLiteral("Launch / Reattach FastHub_Telegram"), m_overlay);
     relaunch->setProperty("primary", true);
     connect(relaunch, &QPushButton::clicked, this, &AyuGramEmbedWidget::launchOrAttach);
     buttons->addWidget(relaunch);
 
     // Manual fallback only - Telegram never silently degrades to web mode.
-    auto* webBtn = new QPushButton(QStringLiteral("Use Web Version"), m_overlay);
+    auto *webBtn = new QPushButton(QStringLiteral("Use Web Version"), m_overlay);
     connect(webBtn, &QPushButton::clicked, this, &AyuGramEmbedWidget::showWebFallback);
     buttons->addWidget(webBtn);
     buttons->addStretch();
@@ -117,8 +118,7 @@ void AyuGramEmbedWidget::setupUi() {
     // per-1.5-s chrome polling is gone: style/location changes now arrive
     // event-driven via SetWinEventHook.
     connect(&m_fallbackTimer, &QTimer::timeout, this, [this]() {
-        if (m_state == EmbedState::Attached &&
-            InterfaceSettings::instance().ayuStripChrome()) {
+        if (m_state == EmbedState::Attached && InterfaceSettings::instance().ayuStripChrome()) {
             applyFramelessStyle(m_ayuHwnd);
         }
         refreshOverlay();
@@ -127,14 +127,12 @@ void AyuGramEmbedWidget::setupUi() {
 
     // Instant sync on tab switches (the eventFilter below only sees
     // top-level move/resize/activation).
-    connect(m_stack, &QStackedWidget::currentChanged, this, [this](int) {
-        refreshOverlay();
-    });
+    connect(m_stack, &QStackedWidget::currentChanged, this, [this](int) { refreshOverlay(); });
 
     qApp->installEventFilter(this);
 }
 
-bool AyuGramEmbedWidget::eventFilter(QObject* obj, QEvent* event) {
+bool AyuGramEmbedWidget::eventFilter(QObject *obj, QEvent *event) {
     if (m_attached && obj == window()) {
         switch (event->type()) {
         case QEvent::Move:
@@ -153,21 +151,20 @@ bool AyuGramEmbedWidget::eventFilter(QObject* obj, QEvent* event) {
     return QWidget::eventFilter(obj, event);
 }
 
-void AyuGramEmbedWidget::setState(EmbedState next, const char* reason) {
+void AyuGramEmbedWidget::setState(EmbedState next, const char *reason) {
     if (m_state == next) {
         return;
     }
-    infrastructure::Logger::instance().debug("Telegram",
-        QStringLiteral("state: %1 -> %2 (%3)")
-            .arg(stateName(m_state), stateName(next), reason));
+    infrastructure::Logger::instance().debug(
+        "Telegram",
+        QStringLiteral("state: %1 -> %2 (%3)").arg(stateName(m_state), stateName(next), reason));
     m_state = next;
 }
 
 void AyuGramEmbedWidget::launchOrAttach() {
-    infrastructure::Logger::instance().info("Telegram",
-        QStringLiteral("launchOrAttach requested (state=%1).").arg(stateName(m_state)));
-    if (m_state == EmbedState::ShuttingDown ||
-        m_state == EmbedState::ZombieCleanup) {
+    infrastructure::Logger::instance().info(
+        "Telegram", QStringLiteral("launchOrAttach requested (state=%1).").arg(stateName(m_state)));
+    if (m_state == EmbedState::ShuttingDown || m_state == EmbedState::ZombieCleanup) {
         return; // Guard: no re-entry during teardown/cleanup
     }
 
@@ -194,9 +191,9 @@ void AyuGramEmbedWidget::launchOrAttach() {
 
     const QString exe = m_launcher.locateExecutable();
     if (exe.isEmpty()) {
-        infrastructure::Logger::instance().warn("Telegram",
-            QStringLiteral("FastHub_Telegram.exe not found (app dir: %1)")
-                .arg(QCoreApplication::applicationDirPath()));
+        infrastructure::Logger::instance().warn(
+            "Telegram", QStringLiteral("FastHub_Telegram.exe not found (app dir: %1)")
+                            .arg(QCoreApplication::applicationDirPath()));
         setState(EmbedState::Idle, "exe not found");
         setOverlay(QStringLiteral("FastHub_Telegram.exe not found in third_party/ayugram."), true);
         return;
@@ -210,12 +207,16 @@ void AyuGramEmbedWidget::launchOrAttach() {
     if (m_launcher.hasWindowlessOrphan()) {
         if (m_launcher.zombieKillAttempts() >= ayu::ProcessLauncher::kMaxZombieKills) {
             setState(EmbedState::Idle, "zombie kill limit reached");
-            setOverlay(QStringLiteral("Stale FastHub_Telegram.exe could not be terminated. Close it manually."), true);
+            setOverlay(
+                QStringLiteral(
+                    "Stale FastHub_Telegram.exe could not be terminated. Close it manually."),
+                true);
             return;
         }
         m_launcher.noteZombieKill();
         setState(EmbedState::ZombieCleanup, "windowless orphan found");
-        infrastructure::Logger::instance().warn("Telegram",
+        infrastructure::Logger::instance().warn(
+            "Telegram",
             "Found windowless orphan FastHub_Telegram.exe - terminating it before relaunch.");
         m_launcher.terminateAllInstances();
         setOverlay(QStringLiteral("Terminating stale FastHub_Telegram.exe..."), false);
@@ -226,8 +227,7 @@ void AyuGramEmbedWidget::launchOrAttach() {
 
     if (!m_process) {
         m_process = new QProcess(this);
-        connect(m_process, &QProcess::finished, this,
-                &AyuGramEmbedWidget::onProcessFinished);
+        connect(m_process, &QProcess::finished, this, &AyuGramEmbedWidget::onProcessFinished);
         connect(m_process, &QProcess::started, this, [this]() {
             // Assign to Job Object so Task Manager shows it under FastHub
             // and it dies together with FastHub (kill-on-close).
@@ -236,21 +236,18 @@ void AyuGramEmbedWidget::launchOrAttach() {
         // Fail fast without blocking the UI thread: start() is async, a
         // FailedToStart error surfaces here instead of waiting for the
         // window-poll timeout.
-        connect(m_process, &QProcess::errorOccurred, this,
-                [this](QProcess::ProcessError error) {
-            if (error == QProcess::FailedToStart &&
-                m_state != EmbedState::ShuttingDown) {
-                infrastructure::Logger::instance().warn("Telegram",
-                    QStringLiteral("FastHub_Telegram.exe failed to start (err %1).")
-                        .arg(m_process ? m_process->errorString() : QString()));
+        connect(m_process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+            if (error == QProcess::FailedToStart && m_state != EmbedState::ShuttingDown) {
+                infrastructure::Logger::instance().warn(
+                    "Telegram", QStringLiteral("FastHub_Telegram.exe failed to start (err %1).")
+                                    .arg(m_process ? m_process->errorString() : QString()));
                 setState(EmbedState::Idle, "process failed to start");
                 m_pollTimer.stop();
                 setOverlay(QStringLiteral("Failed to start FastHub_Telegram.exe."), true);
             }
         });
     }
-    if (m_process->state() != QProcess::Running &&
-        m_process->state() != QProcess::Starting) {
+    if (m_process->state() != QProcess::Running && m_process->state() != QProcess::Starting) {
         m_process->setWorkingDirectory(QFileInfo(exe).absolutePath());
         setState(EmbedState::Launching, "spawn");
         m_process->start(exe, QStringList());
@@ -288,7 +285,9 @@ void AyuGramEmbedWidget::pollForWindow() {
         if (++m_waitTicks > 60) { // ~18s
             m_pollTimer.stop();
             setState(EmbedState::Idle, "no window appeared");
-            setOverlay(QStringLiteral("FastHub_Telegram window not detected. Is it showing a login screen?"), true);
+            setOverlay(QStringLiteral(
+                           "FastHub_Telegram window not detected. Is it showing a login screen?"),
+                       true);
         }
         return;
     }
@@ -320,7 +319,8 @@ bool AyuGramEmbedWidget::attachNativeWindow(quint64 hwndRaw) {
     refreshOverlay();
     m_fallbackTimer.start();
 
-    infrastructure::Logger::instance().info("Telegram", "FastHub_Telegram window embedded into FastHub.");
+    infrastructure::Logger::instance().info("Telegram",
+                                            "FastHub_Telegram window embedded into FastHub.");
     return true;
 }
 
@@ -335,28 +335,23 @@ void AyuGramEmbedWidget::applyFramelessStyle(quint64 hwndRaw) {
     // owned exclusively by refreshOverlay(); touching it here caused a
     // hide/show fight between this guard and the visibility watchdog.
     LONG_PTR style = GetWindowLongPtrW(hwnd, GWL_STYLE);
-    const LONG_PTR chrome = WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX |
-                            WS_MAXIMIZEBOX | WS_SYSMENU | WS_CHILD |
-                            WS_BORDER | WS_DLGFRAME;
-    const LONG_PTR desired =
-        (style & ~chrome) | WS_POPUP | (style & WS_VISIBLE);
+    const LONG_PTR chrome = WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX |
+                            WS_SYSMENU | WS_CHILD | WS_BORDER | WS_DLGFRAME;
+    const LONG_PTR desired = (style & ~chrome) | WS_POPUP | (style & WS_VISIBLE);
     if (style != desired) {
         SetWindowLongPtrW(hwnd, GWL_STYLE, desired);
         SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
-                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-                     SWP_NOACTIVATE);
+                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
     }
     // Hide from the taskbar / Alt-Tab: FastHub is the only entry.
     // Strip any lingering client/window edges that draw 1px borders.
     const LONG_PTR ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
-    const LONG_PTR desiredEx = ((ex | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW &
-                                ~WS_EX_CLIENTEDGE & ~WS_EX_WINDOWEDGE &
-                                ~WS_EX_DLGMODALFRAME & ~WS_EX_STATICEDGE);
+    const LONG_PTR desiredEx = ((ex | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW & ~WS_EX_CLIENTEDGE &
+                                ~WS_EX_WINDOWEDGE & ~WS_EX_DLGMODALFRAME & ~WS_EX_STATICEDGE);
     if (ex != desiredEx) {
         SetWindowLongPtrW(hwnd, GWL_EXSTYLE, desiredEx);
         SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
-                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-                     SWP_NOACTIVATE);
+                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
     }
 
     // Ownership (GWL_HWNDPARENT despite the name sets the OWNER, not the
@@ -365,20 +360,18 @@ void AyuGramEmbedWidget::applyFramelessStyle(quint64 hwndRaw) {
     // is up. This is the OS-level guarantee against FastHub_Telegram sinking UNDER
     // FastHub - independent of any raise-timing races. Re-applied here
     // because FastHub_Telegram's Qt may reset its window state on theme/DPI events.
-    const HWND mainHwnd =
-        window() ? reinterpret_cast<HWND>(window()->winId()) : nullptr;
+    const HWND mainHwnd = window() ? reinterpret_cast<HWND>(window()->winId()) : nullptr;
     if (mainHwnd && GetWindow(hwnd, GW_OWNER) != mainHwnd) {
-        SetWindowLongPtrW(hwnd, kGwlHwndParent,
-                          reinterpret_cast<LONG_PTR>(mainHwnd));
+        SetWindowLongPtrW(hwnd, kGwlHwndParent, reinterpret_cast<LONG_PTR>(mainHwnd));
     }
 
-    // DWM enhancements for FastHub_Telegram: Windows 11 rounded corners and frame extension
-    #ifndef DWMWA_WINDOW_CORNER_PREFERENCE
-    #define DWMWA_WINDOW_CORNER_PREFERENCE 33
-    #endif
-    #ifndef DWMWCP_ROUND
-    #define DWMWCP_ROUND 2
-    #endif
+// DWM enhancements for FastHub_Telegram: Windows 11 rounded corners and frame extension
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
+#define DWMWA_WINDOW_CORNER_PREFERENCE 33
+#endif
+#ifndef DWMWCP_ROUND
+#define DWMWCP_ROUND 2
+#endif
     DWORD cornerPref = DWMWCP_ROUND;
     DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
 
@@ -396,19 +389,17 @@ void AyuGramEmbedWidget::refreshOverlay() {
         // Distinguish "user closed the window" from "process died": the
         // messages and log levels differ, recovery hints differ too.
         const bool processAlive =
-            (m_process && m_process->state() == QProcess::Running) ||
-            m_launcher.isProcessRunning();
+            (m_process && m_process->state() == QProcess::Running) || m_launcher.isProcessRunning();
         detachFromNative(false);
         if (processAlive) {
-            infrastructure::Logger::instance().warn("Telegram",
-                "FastHub_Telegram window handle vanished but the process still runs.");
-            setOverlay(QStringLiteral(
-                           "The FastHub_Telegram window was closed, but its process "
-                           "is still running. Reattach or terminate it?"),
+            infrastructure::Logger::instance().warn(
+                "Telegram", "FastHub_Telegram window handle vanished but the process still runs.");
+            setOverlay(QStringLiteral("The FastHub_Telegram window was closed, but its process "
+                                      "is still running. Reattach or terminate it?"),
                        true);
         } else {
-            infrastructure::Logger::instance().info("Telegram",
-                "FastHub_Telegram exited (window gone, process gone).");
+            infrastructure::Logger::instance().info(
+                "Telegram", "FastHub_Telegram exited (window gone, process gone).");
             setOverlay(QStringLiteral("FastHub_Telegram was closed."), true);
         }
         return;
@@ -455,8 +446,7 @@ void AyuGramEmbedWidget::refreshOverlay() {
     // check, leaving the overlay underneath (user saw an empty rectangle).
     // Reaching here means FastHub is focused (see shouldShowEmbed), so this
     // cannot steal the z-order from unrelated applications.
-    SetWindowPos(ayu, HWND_TOP, 0, 0, 0, 0,
-                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    SetWindowPos(ayu, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 void AyuGramEmbedWidget::handleStyleChange() {
@@ -471,9 +461,9 @@ void AyuGramEmbedWidget::installWinEventHook() {
         // Event-driven replacement for the old 1.5 s style/move polling:
         // FastHub_Telegram re-applying its chrome or moving triggers these events
         // and we react instantly instead of guessing on a timer.
-        m_winHook = reinterpret_cast<void*>(
-            SetWinEventHook(kEvtLocationChange, kEvtStyleChange, nullptr,
-                            &winEventThunk, 0, 0, WINEVENT_OUTOFCONTEXT));
+        m_winHook =
+            reinterpret_cast<void *>(SetWinEventHook(kEvtLocationChange, kEvtStyleChange, nullptr,
+                                                     &winEventThunk, 0, 0, WINEVENT_OUTOFCONTEXT));
     }
 }
 
@@ -484,23 +474,22 @@ void AyuGramEmbedWidget::removeWinEventHook() {
     }
 }
 
-void AyuGramEmbedWidget::resizeEvent(QResizeEvent* event) {
+void AyuGramEmbedWidget::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
     refreshOverlay();
 }
 
-void AyuGramEmbedWidget::showEvent(QShowEvent* event) {
+void AyuGramEmbedWidget::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     refreshOverlay();
 }
 
-void AyuGramEmbedWidget::hideEvent(QHideEvent* event) {
+void AyuGramEmbedWidget::hideEvent(QHideEvent *event) {
     QWidget::hideEvent(event);
     refreshOverlay();
 }
 
-void AyuGramEmbedWidget::onProcessFinished(int exitCode,
-                                           QProcess::ExitStatus status) {
+void AyuGramEmbedWidget::onProcessFinished(int exitCode, QProcess::ExitStatus status) {
     Q_UNUSED(exitCode);
     if (m_state == EmbedState::ShuttingDown) {
         return; // Deliberate shutdown - no user-facing message
@@ -513,12 +502,13 @@ void AyuGramEmbedWidget::onProcessFinished(int exitCode,
     m_attached = false;
     m_geometry.resetCache();
 
-    if (wasAttached &&
-        m_stack->currentWidget() != m_overlay) {
+    if (wasAttached && m_stack->currentWidget() != m_overlay) {
         const bool crashed = status == QProcess::CrashExit;
-        infrastructure::Logger::instance().warn("Telegram",
+        infrastructure::Logger::instance().warn(
+            "Telegram",
             QStringLiteral("FastHub_Telegram process finished (status %1, exit code %2).")
-                .arg(int(status)).arg(exitCode));
+                .arg(int(status))
+                .arg(exitCode));
         setOverlay(crashed ? QStringLiteral("FastHub_Telegram crashed unexpectedly.")
                            : QStringLiteral("FastHub_Telegram was closed."),
                    true);
@@ -554,16 +544,13 @@ void AyuGramEmbedWidget::detachFromNative(bool restoreRegion) {
 void AyuGramEmbedWidget::showWebFallback() {
     // Lazy-create the web client page once. Manual action ONLY.
     if (m_stack->count() < 3) {
-        const QString dataPath =
-            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-            + QStringLiteral("/webprofiles/telegram-web");
+        const QString dataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+                                 QStringLiteral("/webprofiles/telegram-web");
         QDir().mkpath(dataPath);
-        auto* profile =
-            new QWebEngineProfile(QStringLiteral("telegram-web-fallback"), this);
+        auto *profile = new QWebEngineProfile(QStringLiteral("telegram-web-fallback"), this);
         profile->setPersistentStoragePath(dataPath);
-        profile->setPersistentCookiesPolicy(
-            QWebEngineProfile::ForcePersistentCookies);
-        auto* view = new QWebEngineView(profile, this);
+        profile->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
+        auto *view = new QWebEngineView(profile, this);
         view->load(QUrl(QStringLiteral("https://web.telegram.org/a/")));
         m_stack->addWidget(view);
     }
@@ -571,12 +558,12 @@ void AyuGramEmbedWidget::showWebFallback() {
     m_stack->setCurrentIndex(2);
 }
 
-void AyuGramEmbedWidget::setOverlay(const QString& text, bool showRelaunch) {
+void AyuGramEmbedWidget::setOverlay(const QString &text, bool showRelaunch) {
     m_overlayText->setText(text);
     m_stack->setCurrentWidget(m_overlay);
     refreshOverlay();
     // Relaunch button is the first QPushButton on the overlay row.
-    const auto buttons = m_overlay->findChildren<QPushButton*>();
+    const auto buttons = m_overlay->findChildren<QPushButton *>();
     if (buttons.size() >= 2) {
         buttons[0]->setVisible(showRelaunch);
     }
@@ -618,7 +605,8 @@ void AyuGramEmbedWidget::ensureJobObject() {
         return;
     }
     JOBOBJECT_EXTENDED_LIMIT_INFORMATION info{};
-    info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK;
+    info.BasicLimitInformation.LimitFlags =
+        JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK;
     if (!SetInformationJobObject(m_job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
         infrastructure::Logger::instance().warn("Telegram", "SetInformationJobObject failed");
     }
@@ -632,19 +620,26 @@ void AyuGramEmbedWidget::assignProcessToJob(qint64 pid) {
     if (!m_job) {
         return;
     }
-    HANDLE hProc = OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE | PROCESS_SET_LIMITED_INFORMATION, FALSE, static_cast<DWORD>(pid));
+    HANDLE hProc =
+        OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE | PROCESS_SET_LIMITED_INFORMATION, FALSE,
+                    static_cast<DWORD>(pid));
     if (!hProc) {
         return;
     }
     if (!AssignProcessToJobObject(m_job, hProc)) {
         const DWORD err = GetLastError();
-        // ERROR_ACCESS_DENIED (5) or ERROR_ALREADY_ASSIGNED (5? 0x5) means process already in another job (e.g., OS job).
-        // Silent breakaway allows nesting on Win8+ if parent was created with JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK.
+        // ERROR_ACCESS_DENIED (5) or ERROR_ALREADY_ASSIGNED (5? 0x5) means process already in
+        // another job (e.g., OS job). Silent breakaway allows nesting on Win8+ if parent was
+        // created with JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK.
         if (err != ERROR_ACCESS_DENIED && err != ERROR_ALREADY_ASSIGNED) {
-            infrastructure::Logger::instance().warn("Telegram", QStringLiteral("AssignProcessToJobObject failed pid=%1 err=%2").arg(pid).arg(err));
+            infrastructure::Logger::instance().warn(
+                "Telegram",
+                QStringLiteral("AssignProcessToJobObject failed pid=%1 err=%2").arg(pid).arg(err));
         }
     } else {
-        infrastructure::Logger::instance().info("Telegram", QStringLiteral("FastHub_Telegram pid=%1 assigned to Job (Task Manager tree)").arg(pid));
+        infrastructure::Logger::instance().info(
+            "Telegram",
+            QStringLiteral("FastHub_Telegram pid=%1 assigned to Job (Task Manager tree)").arg(pid));
     }
     CloseHandle(hProc);
 }

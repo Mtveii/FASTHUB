@@ -24,13 +24,13 @@ namespace fasthub::providers::steam {
 class SteamProvider : public QObject, public core::IChatProvider {
     Q_OBJECT
 public:
-    explicit SteamProvider(QObject* parent = nullptr);
+    explicit SteamProvider(QObject *parent = nullptr);
     ~SteamProvider() override;
 
     core::ProviderStatus getStatus() const override;
     std::vector<core::Conversation> getConversations() override;
-    std::vector<core::Message> getMessages(const std::string& conversationId) override;
-    bool sendMessage(const std::string& conversationId, const std::string& text) override;
+    std::vector<core::Message> getMessages(const std::string &conversationId) override;
+    bool sendMessage(const std::string &conversationId, const std::string &text) override;
 
     /// @brief true if an API key is stored (real mode available).
     bool hasCredentials() const;
@@ -40,7 +40,7 @@ public:
     QString steamId() const;
 
     /// @brief Persists the Web API key + own steamid64 via ISecureStorage.
-    void saveCredentials(const QString& apiKey, const QString& steamId64);
+    void saveCredentials(const QString &apiKey, const QString &steamId64);
 
     /// @brief Starts the presence poll loop (no-op without credentials).
     void startPolling(int intervalMs = 45000);
@@ -61,10 +61,10 @@ public slots:
 
 private:
     void fetchFriendsList();
-    void fetchPlayerSummaries(const QStringList& steamIds);
-    void handleReply(QNetworkReply* reply, std::function<void(const QJsonDocument&)> onOk);
-    void applySnapshot(const QMap<QString, SteamPresence>& fresh);
-    void enterDegraded(const QString& reason);
+    void fetchPlayerSummaries(const QStringList &steamIds);
+    void handleReply(QNetworkReply *reply, std::function<void(const QJsonDocument &)> onOk);
+    void applySnapshot(const QMap<QString, SteamPresence> &fresh);
+    void enterDegraded(const QString &reason);
 
     QTimer m_pollTimer;
     QNetworkAccessManager m_http;

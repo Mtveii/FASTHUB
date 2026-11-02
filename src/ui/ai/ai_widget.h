@@ -13,7 +13,7 @@ namespace fasthub::ui {
 class AIWidget : public QWidget {
     Q_OBJECT
 public:
-    AIWidget(std::shared_ptr<providers::ai::AIProvider> aiProvider, QWidget* parent = nullptr);
+    AIWidget(std::shared_ptr<providers::ai::AIProvider> aiProvider, QWidget *parent = nullptr);
 
     /// @brief Pulls the freshest cross-module context into the context box.
     ///        Called by MainWindow when the user switches to the AI tab.
@@ -28,11 +28,11 @@ private:
     void setupUi();
 
     std::shared_ptr<providers::ai::AIProvider> m_aiProvider;
-    QComboBox* m_modelSelector;
-    QTextEdit* m_contextInput;
-    QTextEdit* m_promptInput;
-    QTextEdit* m_responseDisplay;
-    QPushButton* m_askButton;
+    QComboBox *m_modelSelector;
+    QTextEdit *m_contextInput;
+    QTextEdit *m_promptInput;
+    QTextEdit *m_responseDisplay;
+    QPushButton *m_askButton;
 };
 
 } // namespace fasthub::ui

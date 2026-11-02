@@ -6,8 +6,7 @@
 #include "ui/workspace/icon_rail.h"
 #include "ui/workspace/file_list_toolbar.h"
 
-class UiLayoutTest : public QObject
-{
+class UiLayoutTest : public QObject {
     Q_OBJECT
 
 private slots:
@@ -16,16 +15,15 @@ private slots:
     void fileListToolbarLayoutAndState();
 };
 
-void UiLayoutTest::topBarLayoutAndState()
-{
+void UiLayoutTest::topBarLayoutAndState() {
     TopBar bar;
     bar.show();
     QVERIFY(QTest::qWaitForWindowExposed(&bar));
 
-    auto *toggle = bar.findChild<QToolButton*>("sidebarToggle");
-    auto *files  = bar.findChild<QToolButton*>("filesTab");
-    auto *search = bar.findChild<QToolButton*>("searchTab");
-    auto *marks  = bar.findChild<QToolButton*>("bookmarksTab");
+    auto *toggle = bar.findChild<QToolButton *>("sidebarToggle");
+    auto *files = bar.findChild<QToolButton *>("filesTab");
+    auto *search = bar.findChild<QToolButton *>("searchTab");
+    auto *marks = bar.findChild<QToolButton *>("bookmarksTab");
 
     QVERIFY(toggle);
     QVERIFY(files);
@@ -37,7 +35,7 @@ void UiLayoutTest::topBarLayoutAndState()
 
     // 1.3 Left to right order
     QVERIFY(toggle->geometry().x() < files->geometry().x());
-    QVERIFY(files->geometry().x()  < search->geometry().x());
+    QVERIFY(files->geometry().x() < search->geometry().x());
     QVERIFY(search->geometry().x() < marks->geometry().x());
 
     // 1.6 Default checked state
@@ -59,15 +57,14 @@ void UiLayoutTest::topBarLayoutAndState()
     QCOMPARE(files->iconSize(), QSize(20, 20));
 }
 
-void UiLayoutTest::iconRailLayoutAndState()
-{
+void UiLayoutTest::iconRailLayoutAndState() {
     IconRail rail;
     rail.show();
     QVERIFY(QTest::qWaitForWindowExposed(&rail));
 
-    auto *files = rail.findChild<QToolButton*>("railFiles");
-    auto *graph = rail.findChild<QToolButton*>("railGraph");
-    auto *tags  = rail.findChild<QToolButton*>("railTags");
+    auto *files = rail.findChild<QToolButton *>("railFiles");
+    auto *graph = rail.findChild<QToolButton *>("railGraph");
+    auto *tags = rail.findChild<QToolButton *>("railTags");
 
     QVERIFY(files);
     QVERIFY(graph);
@@ -89,14 +86,13 @@ void UiLayoutTest::iconRailLayoutAndState()
     QCOMPARE(spy.count(), 1);
 }
 
-void UiLayoutTest::fileListToolbarLayoutAndState()
-{
+void UiLayoutTest::fileListToolbarLayoutAndState() {
     FileListToolbar toolbar;
     toolbar.show();
     QVERIFY(QTest::qWaitForWindowExposed(&toolbar));
 
-    auto *newNote = toolbar.findChild<QToolButton*>("newNote");
-    auto *close   = toolbar.findChild<QToolButton*>("closeBtn");
+    auto *newNote = toolbar.findChild<QToolButton *>("newNote");
+    auto *close = toolbar.findChild<QToolButton *>("closeBtn");
 
     QVERIFY(newNote);
     QVERIFY(close);

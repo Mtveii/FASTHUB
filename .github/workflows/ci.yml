@@ -1,12 +1,4 @@
-name: FastHub CI/CD Pipeline
-
-# FastHub Comprehensive CI/CD Pipeline:
-#   1. format-and-style   — clang-format dry-run, code style validation & diff reporting
-#   2. security-audit     — Secret/credential leak check & repository sanity check
-#   3. build-and-test     — Multi-config (Release & Debug) x64 MSVC build + CTest execution + JUnit reports
-#   4. package-release    — Deploy Qt dependencies (windeployqt), generate SHA-256, create portable ZIP
-#   5. arm64-cross-build  — Cross-compilation for Windows ARM64 target (periodic/dispatch)
-#   6. ci-summary         — Aggregate workflow summary table ($GITHUB_STEP_SUMMARY)
+﻿name: FastHub CI/CD Pipeline
 
 on:
   push:
@@ -14,20 +6,25 @@ on:
   pull_request:
     branches: [ main, master ]
   schedule:
-    - cron: '0 4 * * 1'   # Mondays 04:00 UTC — ARM64 check
+    - cron: '0 4 * * 1'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   QT_VERSION: '6.9.3'
-  BUILD_TYPE: Release
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 jobs:
-  # =========================================================================
-  # 1. FORMAT & CODE STYLE CHECK
-  # =========================================================================
   format-and-style:
     name: Code Style (clang-format)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -38,41 +35,42 @@ jobs:
       - name: Validate C++ Formatting
         id: format_check
         run: |
-          FILES=$(find src tests -type f \( -name '*.cpp' -o -name '*.h' \))
+          set -euo pipefail
+          mapfile -t FILES < <(find src tests -type f \( -name '*.cpp' -o -name '*.h' \))
           ERRORS=0
-          FORMAT_LOG=""
-          for f in $FILES; do
-            if ! clang-format --dry-run --Werror --style=file "$f" 2>/dev/null; then
+          FAILED=""
+          for f in "${FILES[@]}"; do
+            if ! clang-format --dry-run --Werror --style=file "$f" >/dev/null 2>&1; then
               ERRORS=$((ERRORS + 1))
-              FORMAT_LOG="${FORMAT_LOG}\n- \`$f\`"
+              FAILED="${FAILED}\n- \`${f}\`"
             fi
           done
-          
-          if [ $ERRORS -ne 0 ]; then
-            echo "::error::clang-format found $ERRORS file(s) with style violations."
-            echo "FAILED_FILES=$FORMAT_LOG" >> $GITHUB_ENV
+          if [ "$ERRORS" -ne 0 ]; then
+            echo "::warning::clang-format found ${ERRORS} file(s) with style violations."
+            echo "FAILED_FILES=${FAILED}" >> "$GITHUB_ENV"
             exit 1
           fi
+          echo "FAILED_FILES=" >> "$GITHUB_ENV"
 
       - name: Report Formatting Status
         if: always()
         run: |
-          echo "### 🎨 Code Style Check (clang-format)" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.format_check.outcome }}" == "success" ]; then
-            echo "✅ **All C++ source files comply with .clang-format specifications.**" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Formatting errors found in the following files:**" >> $GITHUB_STEP_SUMMARY
-            echo -e "${{ env.FAILED_FILES }}" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "💡 *Run \`clang-format -i <file>\` locally to fix formatting issues.*" >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            echo "### Code Style Check (clang-format)"
+            if [ "${{ steps.format_check.outcome }}" == "success" ]; then
+              echo ":white_check_mark: **All C++ source files comply with .clang-format specifications.**"
+            else
+              echo ":warning: **Formatting violations found.**"
+              echo -e "${{ env.FAILED_FILES }}"
+              echo ""
+              echo "> Run \`clang-format -i <file>\` locally to fix formatting issues."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
-  # =========================================================================
-  # 2. SECURITY & CREDENTIAL AUDIT
-  # =========================================================================
   security-audit:
     name: Security & Credential Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -84,26 +82,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sanity Check - Hardcoded Tokens & Key Patterns
+        id: secret_scan
         run: |
-          echo "Scanning source code for suspicious API key/token patterns..."
-          SUSPICIOUS=$(grep -rE "(api_key|secret_key|private_key|password)\s*=\s*['\"][a-zA-Z0-9_\-]{16,}['\"]" src/ || true)
-          
-          echo "### 🔒 Security & Credential Audit" >> $GITHUB_STEP_SUMMARY
+          set +e
+          SUSPICIOUS=$(grep -rE "(api_key|secret_key|private_key|password)[[:space:]]*=[[:space:]]*['\"][a-zA-Z0-9_\-]{16,}['\"]" src/ || true)
           if [ -z "$SUSPICIOUS" ]; then
-            echo "✅ **No hardcoded secret keys or tokens detected in \`src/\`.**" >> $GITHUB_STEP_SUMMARY
+            echo "SUSPICIOUS_COUNT=0" >> "$GITHUB_ENV"
           else
-            echo "⚠️ **Potential hardcoded secret detected:**" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            echo "$SUSPICIOUS" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "SUSPICIOUS_COUNT=1" >> "$GITHUB_ENV"
+            echo "$SUSPICIOUS" > suspicious.txt
           fi
 
-  # =========================================================================
-  # 3. BUILD & UNIT TESTS (x64 Matrix)
-  # =========================================================================
+      - name: Report Security Status
+        if: always()
+        run: |
+          {
+            echo "### Security & Credential Audit"
+            if [ "${{ env.SUSPICIOUS_COUNT }}" == "0" ]; then
+              echo ":white_check_mark: **No hardcoded secret keys or tokens detected in \`src/\`.**"
+            else
+              echo ":rotating_light: **Potential hardcoded secret detected:**"
+              echo '```'
+              cat suspicious.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build-and-test:
     name: Build & Test (x64 MSVC, ${{ matrix.build_type }})
     runs-on: windows-latest
+    timeout-minutes: 60
     needs: [format-and-style]
     strategy:
       fail-fast: false
@@ -118,21 +126,30 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
-          cache: true
+          modules: 'qtwebengine qtwebchannel qtpositioning qtdeclarative'
+          cache: false
 
       - name: Setup Ninja Build System
         uses: llvm/actions/install-ninja@main
 
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Configure CMake (Ninja, x64 MSVC)
+        id: configure
         run: |
           cmake -S . -B build/${{ matrix.build_type }} `
             -G Ninja `
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -DBUILD_TESTING=ON `
             -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
         shell: pwsh
 
       - name: Build Targets
-        run: cmake --build build/${{ matrix.build_type }} --parallel
+        id: build
+        run: cmake --build build/${{ matrix.build_type }} --parallel ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
         shell: pwsh
 
       - name: Execute CTest Unit Tests
@@ -147,27 +164,27 @@ jobs:
         if: always()
         run: |
           $testFile = "build/${{ matrix.build_type }}/junit-${{ matrix.build_type }}.xml"
-          $summary = "### 🛠️ Build & Test Summary (x64 ${{ matrix.build_type }})`n"
+          $summary = "### Build & Test Summary (x64 ${{ matrix.build_type }})`n"
           $summary += "- **Build Target:** Windows x64 (MSVC 2022 + Ninja)`n"
           $summary += "- **Qt Version:** ${{ env.QT_VERSION }}`n"
           $summary += "- **Configuration:** ${{ matrix.build_type }}`n`n"
-          
+
           if (Test-Path $testFile) {
             [xml]$xml = Get-Content $testFile
-            $suites = $xml.testsuites.testsuite
-            $total = $suites.tests
-            $failures = $suites.failures
-            $errors = $suites.errors
-            $passed = [int]$total - [int]$failures - [int]$errors
-            
-            $summary += "#### 📊 Test Statistics`n"
+            $suite = $xml.testsuite
+            $total = [int]$suite.tests
+            $failures = if ($suite.failures) { [int]$suite.failures } else { 0 }
+            $errors = if ($suite.errors) { [int]$suite.errors } else { 0 }
+            $passed = $total - $failures - $errors
+
+            $summary += "#### Test Statistics`n"
             $summary += "| Total Tests | Passed | Failed | Errors |`n"
             $summary += "|:-----------:|:------:|:------:|:------:|`n"
-            $summary += "| **$total** | ✅ $passed | ❌ $failures | ⚠️ $errors |`n"
+            $summary += "| **$total** | :white_check_mark: $passed | :x: $failures | :warning: $errors |`n"
           } else {
-            $summary += "⚠️ Test output XML not found.`n"
+            $summary += ":warning: Test output XML not found.`n"
           }
-          
+
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
         shell: pwsh
 
@@ -187,13 +204,11 @@ jobs:
           path: build/${{ matrix.build_type }}/Testing/Temporary/LastTest.log
           if-no-files-found: ignore
 
-  # =========================================================================
-  # 4. PACKAGE PORTABLE RELEASE (x64 Standalone)
-  # =========================================================================
   package-release:
     name: Package Portable Release (x64)
     runs-on: windows-latest
     needs: [build-and-test]
+    timeout-minutes: 45
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -203,15 +218,21 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
-          cache: true
+          modules: 'qtwebengine qtwebchannel qtpositioning qtdeclarative'
+          cache: false
 
       - name: Setup Ninja Build System
         uses: llvm/actions/install-ninja@main
 
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Configure & Build Release
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
-          cmake --build build --parallel
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
+          cmake --build build --parallel ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
         shell: pwsh
 
       - name: Deploy Qt Runtime (windeployqt)
@@ -230,11 +251,11 @@ jobs:
           Copy-Item build/src/app/platforms dist -Recurse -ErrorAction SilentlyContinue
           Copy-Item build/src/app/styles    dist -Recurse -ErrorAction SilentlyContinue
           Copy-Item build/src/app/tls       dist -Recurse -ErrorAction SilentlyContinue
-          
+
           Compress-Archive -Path dist\* -DestinationPath FastHub-win-x64.zip -Force
           $hash = (Get-FileHash -Path FastHub-win-x64.zip -Algorithm SHA256).Hash
           $hash | Out-File -FilePath FastHub-win-x64.zip.sha256 -Encoding ascii
-          
+
           $size = [math]::Round((Get-Item FastHub-win-x64.zip).Length / 1MB, 2)
           echo "PACKAGE_SIZE=$size MB" >> $env:GITHUB_ENV
           echo "PACKAGE_SHA256=$hash" >> $env:GITHUB_ENV
@@ -242,14 +263,16 @@ jobs:
 
       - name: Report Release Artifact Summary
         run: |
-          echo "### 📦 Portable Release Artifacts (x64)" >> $env:GITHUB_STEP_SUMMARY
-          echo "- **Archive Name:** \`FastHub-win-x64.zip\`" >> $env:GITHUB_STEP_SUMMARY
-          echo "- **Archive Size:** \`$env:PACKAGE_SIZE\`" >> $env:GITHUB_STEP_SUMMARY
-          echo "- **SHA-256 Checksum:** \`$env:PACKAGE_SHA256\`" >> $env:GITHUB_STEP_SUMMARY
-          echo "" >> $env:GITHUB_STEP_SUMMARY
-          echo "```" >> $env:GITHUB_STEP_SUMMARY
-          Get-ChildItem dist | Select-Object Name, Length | Format-Table -AutoSize | Out-String | Add-Content $env:GITHUB_STEP_SUMMARY
-          echo "```" >> $env:GITHUB_STEP_SUMMARY
+          {
+            echo "### Portable Release Artifacts (x64)"
+            echo "- **Archive Name:** \`FastHub-win-x64.zip\`"
+            echo "- **Archive Size:** \`$env:PACKAGE_SIZE\`"
+            echo "- **SHA-256 Checksum:** \`$env:PACKAGE_SHA256\`"
+            echo ""
+            echo '```'
+            Get-ChildItem dist | Select-Object Name, Length | Format-Table -AutoSize | Out-String
+            echo '```'
+          } >> $env:GITHUB_STEP_SUMMARY
         shell: pwsh
 
       - name: Upload FastHub Standalone ZIP
@@ -260,14 +283,12 @@ jobs:
             FastHub-win-x64.zip
             FastHub-win-x64.zip.sha256
 
-  # =========================================================================
-  # 5. ARM64 CROSS-COMPILATION CHECK
-  # =========================================================================
   arm64-cross-build:
     name: Build Validation (ARM64 Cross-Compile)
     runs-on: windows-latest
     needs: [build-and-test]
     continue-on-error: true
+    timeout-minutes: 45
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -277,35 +298,38 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_arm64_cross_compiled
-          cache: true
+          modules: 'qtwebengine qtwebchannel qtpositioning qtdeclarative'
+          cache: false
 
       - name: Configure CMake (ARM64 Target)
+        id: configure_arm64
         run: |
           cmake -S . -B build-arm64 `
             -G "Visual Studio 17 2022" `
             -A ARM64 `
             -DCMAKE_BUILD_TYPE=Release `
+            -DBUILD_TESTING=OFF `
             -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
         shell: pwsh
 
       - name: Build ARM64 Binaries
-        run: cmake --build build-arm64 --config Release --parallel
+        id: build_arm64
+        run: cmake --build build-arm64 --config Release --parallel ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
         shell: pwsh
 
       - name: Report ARM64 Build Summary
         if: always()
         run: |
-          echo "### 📱 ARM64 Cross-Compilation Check" >> $env:GITHUB_STEP_SUMMARY
-          if ("${{ steps.build.outcome }}" -eq "success") {
-            echo "✅ **ARM64 binaries successfully compiled.**" >> $env:GITHUB_STEP_SUMMARY
-          } else {
-            echo "⚠️ **ARM64 cross-compilation encountered warnings/errors.**" >> $env:GITHUB_STEP_SUMMARY
-          }
+          {
+            echo "### ARM64 Cross-Compilation Check"
+            if ("${{ steps.build_arm64.outcome }}" -eq "success") {
+              echo ":white_check_mark: **ARM64 binaries successfully compiled.**"
+            } else {
+              echo ":warning: **ARM64 cross-compilation encountered warnings/errors.**"
+            }
+          } >> $env:GITHUB_STEP_SUMMARY
         shell: pwsh
 
-  # =========================================================================
-  # 6. PIPELINE OVERALL SUMMARY
-  # =========================================================================
   ci-summary:
     name: CI Pipeline Summary
     runs-on: ubuntu-latest
@@ -314,12 +338,13 @@ jobs:
     steps:
       - name: Render Overall Workflow Status
         run: |
-          echo "## 🚀 FastHub CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
-          echo "| Job Stage | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|:----------|:------:|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎨 Code Style (clang-format) | ${{ needs.format-and-style.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔒 Security & Secret Audit | ${{ needs.security-audit.result == 'success' && '✅ Passed' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🛠️ Build & Unit Tests (x64) | ${{ needs.build-and-test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📦 Package Release Artifacts | ${{ needs.package-release.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📱 ARM64 Cross-Compilation | ${{ needs.arm64-cross-build.result == 'success' && '✅ Passed' || '⚠️ Non-blocking' }} |" >> $GITHUB_STEP_SUMMARY
-
+          {
+            echo "## FastHub CI/CD Pipeline Results"
+            echo "| Job Stage | Status |"
+            echo "|:----------|:------:|"
+            echo "| Code Style (clang-format) | ${{ needs.format-and-style.result == 'success' && ':white_check_mark: Passed' || ':warning: Warning' }} |"
+            echo "| Security & Secret Audit | ${{ needs.security-audit.result == 'success' && ':white_check_mark: Passed' || ':warning: Warning' }} |"
+            echo "| Build & Unit Tests (x64) | ${{ needs.build-and-test.result == 'success' && ':white_check_mark: Passed' || ':x: Failed' }} |"
+            echo "| Package Release Artifacts | ${{ needs.package-release.result == 'success' && ':white_check_mark: Passed' || ':x: Failed' }} |"
+            echo "| ARM64 Cross-Compilation | ${{ needs.arm64-cross-build.result == 'success' && ':white_check_mark: Passed' || ':warning: Non-blocking' }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

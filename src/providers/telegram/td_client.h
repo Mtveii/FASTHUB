@@ -26,35 +26,35 @@ public:
     TdClient();
     ~TdClient();
 
-    TdClient(const TdClient&) = delete;
-    TdClient& operator=(const TdClient&) = delete;
+    TdClient(const TdClient &) = delete;
+    TdClient &operator=(const TdClient &) = delete;
 
     /// @brief true if tdjson.dll was found and all entry points resolved.
     bool isAvailable() const { return m_available.load(); }
 
     /// @brief Creates the TDLib client and starts the receive loop.
-    void start(std::function<void(const QJsonObject&)> updateCallback);
+    void start(std::function<void(const QJsonObject &)> updateCallback);
 
     /// @brief Sends an asynchronous request (JSON string with "@extra").
-    void send(const QString& jsonRequest);
+    void send(const QString &jsonRequest);
 
     /// @brief Executes a synchronous TDLib method.
-    void execute(const QString& jsonRequest);
+    void execute(const QString &jsonRequest);
 
 private:
     void receiveLoop();
     bool loadLibrary();
 
-    std::function<void(const QJsonObject&)> m_updateCallback;
+    std::function<void(const QJsonObject &)> m_updateCallback;
     std::atomic_bool m_available{false};
     std::atomic_bool m_running{false};
 
-    void* m_lib = nullptr;
+    void *m_lib = nullptr;
     int m_clientIdValue = 0;
-    void* m_createClientId = nullptr;
-    void* m_sendFn = nullptr;
-    void* m_receiveFn = nullptr;
-    void* m_executeFn = nullptr;
+    void *m_createClientId = nullptr;
+    void *m_sendFn = nullptr;
+    void *m_receiveFn = nullptr;
+    void *m_executeFn = nullptr;
 
     std::unique_ptr<std::thread> m_receiveThread;
     std::mutex m_sendMutex;

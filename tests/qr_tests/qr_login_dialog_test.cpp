@@ -14,20 +14,19 @@ private slots:
     void deterministicOutput();
 
 private:
-    static QImage pixmapToImage(const QPixmap& pm) {
+    static QImage pixmapToImage(const QPixmap &pm) {
         return pm.toImage().convertToFormat(QImage::Format_Grayscale8);
     }
 };
 
-void QrLoginDialogTest::generatesValidMatrixForUrls()
-{
+void QrLoginDialogTest::generatesValidMatrixForUrls() {
     const auto urls = {
         "https://web.telegram.org",
         "https://discord.com/login",
         "https://store.steampowered.com/login/",
     };
 
-    for (const QString& url : urls) {
+    for (const QString &url : urls) {
         const QPixmap pm = QrLoginDialog::makeQrPixmap(url, 240);
         QVERIFY2(!pm.isNull(), qPrintable(QString("QR generation failed for %1").arg(url)));
         QCOMPARE(pm.width(), 240);
@@ -46,14 +45,12 @@ void QrLoginDialogTest::generatesValidMatrixForUrls()
     }
 }
 
-void QrLoginDialogTest::rejectsGarbagePayloads()
-{
+void QrLoginDialogTest::rejectsGarbagePayloads() {
     // Empty payload must not crash and should yield a null pixmap.
     QVERIFY(QrLoginDialog::makeQrPixmap("", 120).isNull());
 }
 
-void QrLoginDialogTest::deterministicOutput()
-{
+void QrLoginDialogTest::deterministicOutput() {
     const QPixmap a = QrLoginDialog::makeQrPixmap("https://example.com", 210);
     const QPixmap b = QrLoginDialog::makeQrPixmap("https://example.com", 210);
     QCOMPARE(pixmapToImage(a), pixmapToImage(b));

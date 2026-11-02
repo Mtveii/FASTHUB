@@ -46,20 +46,20 @@ namespace fasthub::ui {
 class AyuGramEmbedWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit AyuGramEmbedWidget(QWidget* parent = nullptr);
+    explicit AyuGramEmbedWidget(QWidget *parent = nullptr);
     ~AyuGramEmbedWidget() override;
 
     /// @brief Accessors for the global WinEvent callback (see .cpp).
-    static AyuGramEmbedWidget* s_activeInstanceForCallback() { return s_activeInstance; }
+    static AyuGramEmbedWidget *s_activeInstanceForCallback() { return s_activeInstance; }
     quint64 embeddedHwnd() const { return m_ayuHwnd; }
     void handleStyleChange();
     void refreshOverlayPublic() { refreshOverlay(); }
 
 protected:
-    bool eventFilter(QObject* obj, QEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
-    void showEvent(QShowEvent* event) override;
-    void hideEvent(QHideEvent* event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
 
 private slots:
     void launchOrAttach();
@@ -74,8 +74,8 @@ private:
     void refreshOverlay();
 
     void setupUi();
-    void setState(ayu::EmbedState next, const char* reason);
-    void setOverlay(const QString& text, bool showRelaunch);
+    void setState(ayu::EmbedState next, const char *reason);
+    void setOverlay(const QString &text, bool showRelaunch);
     bool attachNativeWindow(quint64 hwnd);
     void detachFromNative(bool restoreRegion);
     void shutdownEmbeddedProcess();
@@ -90,24 +90,25 @@ private:
     ayu::ProcessLauncher m_launcher{QString::fromWCharArray(ayu::kAyuImageName)};
     ayu::GeometrySync m_geometry;
 
-    QProcess* m_process = nullptr;
-    QStackedWidget* m_stack = nullptr;
-    QWidget* m_overlay = nullptr;
-    QLabel* m_overlayText = nullptr;
-    QWidget* m_container = nullptr; ///< Placeholder page under the Ayu window
+    QProcess *m_process = nullptr;
+    QStackedWidget *m_stack = nullptr;
+    QWidget *m_overlay = nullptr;
+    QLabel *m_overlayText = nullptr;
+    QWidget *m_container = nullptr; ///< Placeholder page under the Ayu window
     QTimer m_pollTimer;             ///< Startup window poll (300 ms)
     QTimer m_fallbackTimer;         ///< Slow safety net (10 s)
     quint64 m_ayuHwnd = 0;
-    DWORD m_ayuPid = 0;             ///< FastHub_Telegram process id (focus checks)
-    void* m_winHook = nullptr;      ///< WinEvent hook (HWINEVENTHOOK)
-    HANDLE m_job = nullptr;         ///< Job object: makes child appear under FastHub in Task Manager + kill-on-close
+    DWORD m_ayuPid = 0;        ///< FastHub_Telegram process id (focus checks)
+    void *m_winHook = nullptr; ///< WinEvent hook (HWINEVENTHOOK)
+    HANDLE m_job =
+        nullptr; ///< Job object: makes child appear under FastHub in Task Manager + kill-on-close
     int m_waitTicks = 0;
     bool m_attached = false;
-    bool m_lastShown = false;       ///< Last applied visibility (early exit)
+    bool m_lastShown = false; ///< Last applied visibility (early exit)
     ayu::EmbedState m_state = ayu::EmbedState::Idle;
 
     /// Single-instance routing for the global WinEvent callback.
-    static AyuGramEmbedWidget* s_activeInstance;
+    static AyuGramEmbedWidget *s_activeInstance;
 };
 
 } // namespace fasthub::ui

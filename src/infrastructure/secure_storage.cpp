@@ -18,13 +18,13 @@ QString SecureStorage::getStoragePath() const {
     return dir + "/secrets.ini";
 }
 
-bool SecureStorage::setSecret(const std::string& key, const std::string& value) {
+bool SecureStorage::setSecret(const std::string &key, const std::string &value) {
     if (key.empty()) {
         return false;
     }
 
     DATA_BLOB inBlob;
-    inBlob.pbData = const_cast<BYTE*>(reinterpret_cast<const BYTE*>(value.data()));
+    inBlob.pbData = const_cast<BYTE *>(reinterpret_cast<const BYTE *>(value.data()));
     inBlob.cbData = static_cast<DWORD>(value.size());
 
     DATA_BLOB outBlob;
@@ -32,7 +32,7 @@ bool SecureStorage::setSecret(const std::string& key, const std::string& value) 
         return false;
     }
 
-    QByteArray encrypted(reinterpret_cast<const char*>(outBlob.pbData), outBlob.cbData);
+    QByteArray encrypted(reinterpret_cast<const char *>(outBlob.pbData), outBlob.cbData);
     LocalFree(outBlob.pbData);
 
     QSettings settings(getStoragePath(), QSettings::IniFormat);
@@ -40,7 +40,7 @@ bool SecureStorage::setSecret(const std::string& key, const std::string& value) 
     return true;
 }
 
-std::optional<std::string> SecureStorage::getSecret(const std::string& key) {
+std::optional<std::string> SecureStorage::getSecret(const std::string &key) {
     if (key.empty()) {
         return std::nullopt;
     }
@@ -50,13 +50,14 @@ std::optional<std::string> SecureStorage::getSecret(const std::string& key) {
         return std::nullopt;
     }
 
-    QByteArray encrypted = QByteArray::fromBase64(settings.value(QString::fromStdString(key)).toByteArray());
+    QByteArray encrypted =
+        QByteArray::fromBase64(settings.value(QString::fromStdString(key)).toByteArray());
     if (encrypted.isEmpty()) {
         return std::nullopt;
     }
 
     DATA_BLOB inBlob;
-    inBlob.pbData = reinterpret_cast<BYTE*>(encrypted.data());
+    inBlob.pbData = reinterpret_cast<BYTE *>(encrypted.data());
     inBlob.cbData = static_cast<DWORD>(encrypted.size());
 
     DATA_BLOB outBlob;
@@ -64,13 +65,13 @@ std::optional<std::string> SecureStorage::getSecret(const std::string& key) {
         return std::nullopt;
     }
 
-    std::string result(reinterpret_cast<char*>(outBlob.pbData), outBlob.cbData);
+    std::string result(reinterpret_cast<char *>(outBlob.pbData), outBlob.cbData);
     LocalFree(outBlob.pbData);
 
     return result;
 }
 
-bool SecureStorage::removeSecret(const std::string& key) {
+bool SecureStorage::removeSecret(const std::string &key) {
     if (key.empty()) {
         return false;
     }

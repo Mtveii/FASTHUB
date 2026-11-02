@@ -11,7 +11,8 @@ namespace fasthub::ui {
 class DiscordWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit DiscordWidget(std::shared_ptr<providers::discord::DiscordProvider> discordProvider, QWidget* parent = nullptr);
+    explicit DiscordWidget(std::shared_ptr<providers::discord::DiscordProvider> discordProvider,
+                           QWidget *parent = nullptr);
     ~DiscordWidget() override = default;
 
 private:
@@ -21,7 +22,7 @@ private:
 
     std::shared_ptr<providers::discord::DiscordProvider> m_discordProvider;
     std::shared_ptr<providers::discord::DiscordOauthService> m_oauthService;
-    QListWidget* m_channelsListWidget;
+    QListWidget *m_channelsListWidget;
 };
 
 } // namespace fasthub::ui

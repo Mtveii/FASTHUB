@@ -19,7 +19,8 @@ namespace {
 constexpr int kVanityPort = 0; // unused; kept for clarity
 }
 
-SteamSettingsDialog::SteamSettingsDialog(std::shared_ptr<providers::steam::SteamProvider> provider, QWidget* parent)
+SteamSettingsDialog::SteamSettingsDialog(std::shared_ptr<providers::steam::SteamProvider> provider,
+                                         QWidget *parent)
     : QDialog(parent), m_provider(provider) {
     setupUi();
 }
@@ -28,11 +29,11 @@ void SteamSettingsDialog::setupUi() {
     setWindowTitle("Steam - Web API Setup");
     resize(460, 260);
 
-    auto* layout = new QVBoxLayout(this);
+    auto *layout = new QVBoxLayout(this);
 
-    layout->addWidget(new QLabel(
-        "1. Get a free key: steamcommunity.com/dev/apikey\n"
-        "2. Your SteamID64 (from your profile URL) or vanity name.", this));
+    layout->addWidget(new QLabel("1. Get a free key: steamcommunity.com/dev/apikey\n"
+                                 "2. Your SteamID64 (from your profile URL) or vanity name.",
+                                 this));
 
     m_apiKeyEdit = new QLineEdit(this);
     m_apiKeyEdit->setPlaceholderText("Steam Web API key");
@@ -55,12 +56,12 @@ void SteamSettingsDialog::setupUi() {
     m_hintLabel->setProperty("role", "muted");
     layout->addWidget(m_hintLabel);
 
-    auto* save = new QPushButton("Save and start polling", this);
+    auto *save = new QPushButton("Save and start polling", this);
     save->setProperty("primary", true);
     connect(save, &QPushButton::clicked, this, &SteamSettingsDialog::onSave);
     layout->addWidget(save);
 
-    auto* close = new QPushButton("Close", this);
+    auto *close = new QPushButton("Close", this);
     connect(close, &QPushButton::clicked, this, &QDialog::accept);
     layout->addWidget(close);
 }
@@ -85,14 +86,16 @@ void SteamSettingsDialog::onSave() {
         q.addQueryItem(QStringLiteral("vanityurl"), vanity);
         url.setQuery(q);
 
-        auto* nam = new QNetworkAccessManager(this);
-        auto* reply = nam->get(QNetworkRequest(url));
+        auto *nam = new QNetworkAccessManager(this);
+        auto *reply = nam->get(QNetworkRequest(url));
         connect(reply, &QNetworkReply::finished, this, [this, reply, key, nam]() {
             reply->deleteLater();
             nam->deleteLater();
 
             const QJsonObject response = QJsonDocument::fromJson(reply->readAll())
-                                             .object().value(QStringLiteral("response")).toObject();
+                                             .object()
+                                             .value(QStringLiteral("response"))
+                                             .toObject();
             const QString resolved = response.value(QStringLiteral("steamid")).toString();
             if (response.value(QStringLiteral("success")).toInt() != 1 || resolved.isEmpty()) {
                 m_hintLabel->setText(QString("Could not resolve '%1'.").arg(m_steamIdEdit->text()));

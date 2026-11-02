@@ -19,16 +19,16 @@ namespace fasthub::ui {
 class ContextBroker : public QObject {
     Q_OBJECT
 public:
-    static ContextBroker& instance();
+    static ContextBroker &instance();
 
     /// @brief Publishes a text selection from a module.
     /// @param source Human-readable origin ("workspace: note.md", "discord").
     /// @param text Selected text (may be empty -> clears selection part).
-    void setSelection(const QString& source, const QString& text);
+    void setSelection(const QString &source, const QString &text);
 
     /// @brief Publishes the currently open file (path + content provider).
     ///        The provider is called lazily (file may be huge).
-    void setCurrentFile(const QString& path, std::function<QString()> contentProvider);
+    void setCurrentFile(const QString &path, std::function<QString()> contentProvider);
 
     QString selectionText() const { return m_selectionText; }
     QString selectionSource() const { return m_selectionSource; }

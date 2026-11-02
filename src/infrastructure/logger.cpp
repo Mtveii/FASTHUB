@@ -9,12 +9,12 @@
 
 namespace fasthub::infrastructure {
 
-Logger& Logger::instance() {
+Logger &Logger::instance() {
     static Logger s_instance;
     return s_instance;
 }
 
-void Logger::init(const QString& logFilePath) {
+void Logger::init(const QString &logFilePath) {
     QMutexLocker locker(&m_mutex);
     m_logFilePath = logFilePath;
     QFileInfo info(m_logFilePath);
@@ -23,24 +23,29 @@ void Logger::init(const QString& logFilePath) {
 
 QString levelToString(LogLevel level) {
     switch (level) {
-        case LogLevel::Debug:   return "DEBUG";
-        case LogLevel::Info:    return "INFO ";
-        case LogLevel::Warning: return "WARN ";
-        case LogLevel::Error:   return "ERROR";
-        case LogLevel::Fatal:   return "FATAL";
+    case LogLevel::Debug:
+        return "DEBUG";
+    case LogLevel::Info:
+        return "INFO ";
+    case LogLevel::Warning:
+        return "WARN ";
+    case LogLevel::Error:
+        return "ERROR";
+    case LogLevel::Fatal:
+        return "FATAL";
     }
     return "UNKNOWN";
 }
 
-void Logger::log(LogLevel level, const QString& category, const QString& message) {
+void Logger::log(LogLevel level, const QString &category, const QString &message) {
     QMutexLocker locker(&m_mutex);
 
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
     QString formattedMessage = QString("[%1] [%2] [%3] %4\n")
-        .arg(timestamp)
-        .arg(levelToString(level))
-        .arg(category)
-        .arg(message);
+                                   .arg(timestamp)
+                                   .arg(levelToString(level))
+                                   .arg(category)
+                                   .arg(message);
 
     // Also output to debug stream
     qDebug().noquote() << formattedMessage.trimmed();
@@ -58,19 +63,19 @@ void Logger::log(LogLevel level, const QString& category, const QString& message
     }
 }
 
-void Logger::debug(const QString& category, const QString& message) {
+void Logger::debug(const QString &category, const QString &message) {
     log(LogLevel::Debug, category, message);
 }
 
-void Logger::info(const QString& category, const QString& message) {
+void Logger::info(const QString &category, const QString &message) {
     log(LogLevel::Info, category, message);
 }
 
-void Logger::warn(const QString& category, const QString& message) {
+void Logger::warn(const QString &category, const QString &message) {
     log(LogLevel::Warning, category, message);
 }
 
-void Logger::error(const QString& category, const QString& message) {
+void Logger::error(const QString &category, const QString &message) {
     log(LogLevel::Error, category, message);
 }
 

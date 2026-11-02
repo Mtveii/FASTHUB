@@ -21,7 +21,7 @@ QIcon logoIcon();
 QPixmap logoPixmap(int size);
 
 /// @brief Renders a bundled SVG icon recolored to @p color, @p size x @p size, with caching.
-QIcon tintedIcon(const QString& resourcePath, const QColor& color, int size = 24);
+QIcon tintedIcon(const QString &resourcePath, const QColor &color, int size = 24);
 
 /// @brief Clears the icon render cache (call on theme change).
 void clearCache();

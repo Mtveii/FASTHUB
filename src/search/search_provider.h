@@ -9,7 +9,7 @@ public:
     SearchProvider() = default;
     ~SearchProvider() override = default;
 
-    std::vector<core::SearchResult> search(const std::string& query) override;
+    std::vector<core::SearchResult> search(const std::string &query) override;
 };
 
 } // namespace fasthub::search

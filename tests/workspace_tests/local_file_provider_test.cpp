@@ -9,9 +9,10 @@ using fasthub::workspace::LocalFileProvider;
 
 namespace {
 
-bool writeFileRaw(const QString& path, const QByteArray& content) {
+bool writeFileRaw(const QString &path, const QByteArray &content) {
     QFile f(path);
-    if (!f.open(QIODevice::WriteOnly)) return false;
+    if (!f.open(QIODevice::WriteOnly))
+        return false;
     return f.write(content) == content.size();
 }
 
@@ -33,16 +34,14 @@ private:
     QTemporaryDir m_root;
 };
 
-void LocalFileProviderTest::initTestCase()
-{
+void LocalFileProviderTest::initTestCase() {
     QVERIFY(m_root.isValid());
     QVERIFY(QDir(m_root.path()).mkpath("sub"));
     QVERIFY(writeFileRaw(m_root.filePath("note.md"), "# Hello"));
     QVERIFY(writeFileRaw(m_root.filePath("sub/deep.txt"), "deep content"));
 }
 
-void LocalFileProviderTest::rootIsRequiredBeforeUse()
-{
+void LocalFileProviderTest::rootIsRequiredBeforeUse() {
     LocalFileProvider locked;
     QVERIFY(!locked.readFile(m_root.filePath("note.md").toStdString()).has_value());
     QVERIFY(locked.listDirectory(m_root.path().toStdString()).empty());
@@ -52,8 +51,7 @@ void LocalFileProviderTest::rootIsRequiredBeforeUse()
     QVERIFY(!locked.setRootPath("Z:/definitely/missing/dir")); // invalid root rejected
 }
 
-void LocalFileProviderTest::listDirectoryInsideRoot()
-{
+void LocalFileProviderTest::listDirectoryInsideRoot() {
     LocalFileProvider p;
     QVERIFY(p.setRootPath(m_root.path().toStdString()));
 
@@ -61,7 +59,7 @@ void LocalFileProviderTest::listDirectoryInsideRoot()
     QCOMPARE(static_cast<int>(entries.size()), 2); // note.md + sub
 
     bool sawDir = false;
-    for (const auto& e : entries) {
+    for (const auto &e : entries) {
         if (e.name == "sub") {
             sawDir = e.isDirectory;
         }
@@ -69,8 +67,7 @@ void LocalFileProviderTest::listDirectoryInsideRoot()
     QVERIFY(sawDir);
 }
 
-void LocalFileProviderTest::readWriteRoundTrip()
-{
+void LocalFileProviderTest::readWriteRoundTrip() {
     LocalFileProvider p;
     QVERIFY(p.setRootPath(m_root.path().toStdString()));
 
@@ -82,19 +79,20 @@ void LocalFileProviderTest::readWriteRoundTrip()
     QCOMPARE(QString::fromStdString(*content), QString("line1\nline2\n"));
 }
 
-void LocalFileProviderTest::pathTraversalIsRejected()
-{
+void LocalFileProviderTest::pathTraversalIsRejected() {
     LocalFileProvider p;
     QVERIFY(p.setRootPath(m_root.path().toStdString()));
 
-    const std::string outside = QDir::toNativeSeparators(m_root.filePath("../outside.txt")).toStdString();
+    const std::string outside =
+        QDir::toNativeSeparators(m_root.filePath("../outside.txt")).toStdString();
     QVERIFY(!p.isInsideRoot(outside));
     QVERIFY(!p.writeFile(outside, "evil"));
     QVERIFY(!p.readFile(outside).has_value());
     QVERIFY(!p.deleteFile(outside));
     QVERIFY(!p.createFile(outside, true));
 
-    const std::string traversal = m_root.filePath("..\\..\\windows\\system32\\evil.txt").toStdString();
+    const std::string traversal =
+        m_root.filePath("..\\..\\windows\\system32\\evil.txt").toStdString();
     QVERIFY(!p.isInsideRoot(traversal));
     QVERIFY(!p.writeFile(traversal, "evil"));
 
@@ -102,8 +100,7 @@ void LocalFileProviderTest::pathTraversalIsRejected()
     QVERIFY(!p.isInsideRoot(std::string("C:\\Windows\\notepad.exe")));
 }
 
-void LocalFileProviderTest::deleteProtectsRoot()
-{
+void LocalFileProviderTest::deleteProtectsRoot() {
     LocalFileProvider p;
     QVERIFY(p.setRootPath(m_root.path().toStdString()));
 
@@ -115,8 +112,7 @@ void LocalFileProviderTest::deleteProtectsRoot()
     QVERIFY(QDir(m_root.path()).exists());
 }
 
-void LocalFileProviderTest::renameStaysInsideRoot()
-{
+void LocalFileProviderTest::renameStaysInsideRoot() {
     LocalFileProvider p;
     QVERIFY(p.setRootPath(m_root.path().toStdString()));
 

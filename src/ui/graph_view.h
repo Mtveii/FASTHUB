@@ -20,12 +20,11 @@ public:
     NoteNodeItem(QString name, int index, float radius);
 
     QRectF boundingRect() const override;
-    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
-               QWidget* widget) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     int index() const { return m_index; }
     float radius() const { return m_radius; }
-    void addIncidentEdge(QGraphicsLineItem* line, bool isStart);
+    void addIncidentEdge(QGraphicsLineItem *line, bool isStart);
 
 signals:
     /// @brief Emitted on click (not drag); @p index is the model node index.
@@ -33,17 +32,16 @@ signals:
     void positionDropped();
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
-    QVariant itemChange(GraphicsItemChange change,
-                        const QVariant& value) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 private:
     QString m_name;
     int m_index;
     float m_radius;
     QPointF m_pressPos;
-    QVector<QPair<QGraphicsLineItem*, bool>> m_incidentEdges;
+    QVector<QPair<QGraphicsLineItem *, bool>> m_incidentEdges;
 };
 
 /// @brief Obsidian-style link graph for the workspace notes.
@@ -59,20 +57,20 @@ private:
 class GraphView : public QGraphicsView {
     Q_OBJECT
 public:
-    explicit GraphView(QWidget* parent = nullptr);
+    explicit GraphView(QWidget *parent = nullptr);
     ~GraphView() override;
 
     /// @brief Rebuilds the graph for the given workspace root (empty = clear).
-    void setWorkspaceRoot(const QString& root);
+    void setWorkspaceRoot(const QString &root);
     void saveGraphCache();
 
 signals:
     /// @brief Emitted when the user clicks a node; @p path is absolute.
-    void noteActivated(const QString& path);
+    void noteActivated(const QString &path);
 
 protected:
-    void resizeEvent(QResizeEvent* event) override;
-    void wheelEvent(QWheelEvent* event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
 private slots:
     void simulationTick();
@@ -86,12 +84,12 @@ private:
         float radius = 10.0f;
         int degree = 0;
         bool pinned = false;
-        NoteNodeItem* item = nullptr;
+        NoteNodeItem *item = nullptr;
     };
     struct Edge {
         int from = -1;
         int to = -1;
-        QGraphicsLineItem* line = nullptr;
+        QGraphicsLineItem *line = nullptr;
     };
 
     void clearGraph();

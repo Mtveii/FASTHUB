@@ -16,13 +16,13 @@ namespace FileLocator {
 /// - comparison is case-insensitive (Windows).
 ///
 /// @return Absolute path of the best match, or empty QString if not found.
-QString findFileByName(const QString& rootPath, const QString& name);
+QString findFileByName(const QString &rootPath, const QString &name);
 
 /// @brief Ensures the file exists; creates missing notes (with .md
 ///        extension when no suffix given) like Obsidian does when
 ///        following an unresolved wiki link.
 /// @return Absolute path to the existing or newly created file.
-QString createIfMissing(const QString& rootPath, const QString& name);
+QString createIfMissing(const QString &rootPath, const QString &name);
 
 } // namespace FileLocator
 

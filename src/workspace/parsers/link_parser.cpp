@@ -4,21 +4,21 @@
 namespace workspace {
 namespace {
 
-struct Range { int start; int end; }; // [start, end)
+struct Range {
+    int start;
+    int end;
+}; // [start, end)
 
-bool insideAny(int pos, const QVector<Range> &ranges)
-{
+bool insideAny(int pos, const QVector<Range> &ranges) {
     for (const auto &r : ranges)
         if (pos >= r.start && pos < r.end)
             return true;
     return false;
 }
 
-QVector<Range> fencedCodeRanges(const QString &content)
-{
+QVector<Range> fencedCodeRanges(const QString &content) {
     QVector<Range> ranges;
-    static const QRegularExpression fence(
-        QStringLiteral("```[^\\n]*\\n[\\s\\S]*?```"));
+    static const QRegularExpression fence(QStringLiteral("```[^\\n]*\\n[\\s\\S]*?```"));
     auto it = fence.globalMatch(content);
     while (it.hasNext()) {
         const auto m = it.next();
@@ -27,8 +27,7 @@ QVector<Range> fencedCodeRanges(const QString &content)
     return ranges;
 }
 
-QVector<Range> inlineCodeRanges(const QString &content, const QVector<Range> &fenced)
-{
+QVector<Range> inlineCodeRanges(const QString &content, const QVector<Range> &fenced) {
     QVector<Range> ranges;
     static const QRegularExpression inlineCode(QStringLiteral("`[^`\\n]+`"));
     auto it = inlineCode.globalMatch(content);
@@ -43,8 +42,7 @@ QVector<Range> inlineCodeRanges(const QString &content, const QVector<Range> &fe
 
 } // namespace
 
-QVector<WikiLink> LinkParser::parse(const QString &content)
-{
+QVector<WikiLink> LinkParser::parse(const QString &content) {
     QVector<WikiLink> result;
 
     const QVector<Range> fenced = fencedCodeRanges(content);
@@ -66,11 +64,11 @@ QVector<WikiLink> LinkParser::parse(const QString &content)
             continue;
 
         WikiLink link;
-        link.target  = m.captured(1).trimmed();
+        link.target = m.captured(1).trimmed();
         link.heading = m.captured(2).trimmed();
-        link.alias   = m.captured(3).trimmed();
-        link.start   = start;
-        link.end     = end;
+        link.alias = m.captured(3).trimmed();
+        link.start = start;
+        link.end = end;
 
         if (link.target.isEmpty())
             continue; // "[[]]" or "[[#heading]]" — not a valid link

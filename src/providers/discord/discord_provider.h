@@ -11,8 +11,8 @@ public:
 
     core::ProviderStatus getStatus() const override;
     std::vector<core::Conversation> getConversations() override;
-    std::vector<core::Message> getMessages(const std::string& conversationId) override;
-    bool sendMessage(const std::string& conversationId, const std::string& text) override;
+    std::vector<core::Message> getMessages(const std::string &conversationId) override;
+    bool sendMessage(const std::string &conversationId, const std::string &text) override;
     std::vector<core::DiscordChannel> getChannels() override;
 
 private:

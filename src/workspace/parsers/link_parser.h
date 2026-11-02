@@ -6,15 +6,14 @@
 namespace workspace {
 
 struct WikiLink {
-    QString target;   // note reference, trimmed, e.g. "Project Ideas"
-    QString heading;   // optional "#heading" part, empty if none
-    QString alias;      // optional "|alias" part, empty if none
-    int start = -1;   // offset of '[[' in source
-    int end   = -1;   // offset just past ']]'
+    QString target;  // note reference, trimmed, e.g. "Project Ideas"
+    QString heading; // optional "#heading" part, empty if none
+    QString alias;   // optional "|alias" part, empty if none
+    int start = -1;  // offset of '[[' in source
+    int end = -1;    // offset just past ']]'
 };
 
-class LinkParser
-{
+class LinkParser {
 public:
     // Parses all [[wiki links]] in `content`.
     // Skips links located inside fenced (```) or inline (`) code spans.

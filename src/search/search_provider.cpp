@@ -4,7 +4,7 @@
 
 namespace fasthub::search {
 
-std::vector<core::SearchResult> SearchProvider::search(const std::string& query) {
+std::vector<core::SearchResult> SearchProvider::search(const std::string &query) {
     return database::DatabaseManager::instance().searchFts(query);
 }
 

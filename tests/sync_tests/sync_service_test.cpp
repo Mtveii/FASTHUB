@@ -23,14 +23,13 @@ private:
     QTemporaryDir m_tempDir;
 };
 
-void SyncServiceTest::initTestCase()
-{
+void SyncServiceTest::initTestCase() {
     QVERIFY(m_tempDir.isValid());
-    QVERIFY(fasthub::database::DatabaseManager::instance().initialize(m_tempDir.filePath("sync.sqlite")));
+    QVERIFY(fasthub::database::DatabaseManager::instance().initialize(
+        m_tempDir.filePath("sync.sqlite")));
 }
 
-void SyncServiceTest::syncPersistsConversationsAndSignals()
-{
+void SyncServiceTest::syncPersistsConversationsAndSignals() {
     auto provider = std::make_shared<FakeChatProvider>();
     SyncService service(provider);
 
@@ -48,8 +47,7 @@ void SyncServiceTest::syncPersistsConversationsAndSignals()
     QCOMPARE(convs.front().internalId, std::string("fake:1"));
 }
 
-void SyncServiceTest::performSyncDoesNotBlockCaller()
-{
+void SyncServiceTest::performSyncDoesNotBlockCaller() {
     auto provider = std::make_shared<FakeChatProvider>(300); // slow provider
     SyncService service(provider);
 
@@ -65,8 +63,7 @@ void SyncServiceTest::performSyncDoesNotBlockCaller()
     QVERIFY(completedSpy.wait(5000));
 }
 
-void SyncServiceTest::overlappingTicksAreSkipped()
-{
+void SyncServiceTest::overlappingTicksAreSkipped() {
     auto provider = std::make_shared<FakeChatProvider>(250);
     SyncService service(provider);
 
@@ -85,4 +82,3 @@ void SyncServiceTest::overlappingTicksAreSkipped()
 
 QTEST_MAIN(SyncServiceTest)
 #include "sync_service_test.moc"
-

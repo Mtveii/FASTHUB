@@ -6,14 +6,15 @@
 
 namespace fasthub::ui {
 
-CalendarWidget::CalendarWidget(QString workspacePath, QWidget* parent)
-    : QWidget(parent), m_workspacePath(std::move(workspacePath)), m_currentDate(QDate::currentDate()) {
-    
-    auto* mainLayout = new QHBoxLayout(this);
+CalendarWidget::CalendarWidget(QString workspacePath, QWidget *parent)
+    : QWidget(parent), m_workspacePath(std::move(workspacePath)),
+      m_currentDate(QDate::currentDate()) {
+
+    auto *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(16);
 
-    auto* splitter = new QSplitter(Qt::Horizontal, this);
+    auto *splitter = new QSplitter(Qt::Horizontal, this);
     splitter->setHandleWidth(1);
 
     // Left: Calendar
@@ -21,17 +22,20 @@ CalendarWidget::CalendarWidget(QString workspacePath, QWidget* parent)
     m_calendar->setGridVisible(true);
     m_calendar->setStyleSheet(
         "QCalendarWidget QWidget { background-color: palette(window); color: palette(text); }"
-        "QCalendarWidget QToolButton { color: palette(text); background-color: palette(button); border-radius: 4px; margin: 2px; }"
+        "QCalendarWidget QToolButton { color: palette(text); background-color: palette(button); "
+        "border-radius: 4px; margin: 2px; }"
         "QCalendarWidget QToolButton:hover { background-color: palette(alternate-base); }"
         "QCalendarWidget QMenu { background-color: palette(window); color: palette(text); }"
-        "QCalendarWidget QSpinBox { background-color: palette(base); color: palette(text); selection-background-color: palette(highlight); }"
-        "QAbstractItemView:enabled { background-color: palette(base); color: palette(text); selection-background-color: palette(highlight); selection-color: palette(highlighted-text); }"
-    );
+        "QCalendarWidget QSpinBox { background-color: palette(base); color: palette(text); "
+        "selection-background-color: palette(highlight); }"
+        "QAbstractItemView:enabled { background-color: palette(base); color: palette(text); "
+        "selection-background-color: palette(highlight); selection-color: "
+        "palette(highlighted-text); }");
     connect(m_calendar, &QCalendarWidget::clicked, this, &CalendarWidget::onDateSelected);
 
     // Right: Tasks / Notes for selected date
-    auto* rightPanel = new QWidget(this);
-    auto* rightLayout = new QVBoxLayout(rightPanel);
+    auto *rightPanel = new QWidget(this);
+    auto *rightLayout = new QVBoxLayout(rightPanel);
     rightLayout->setContentsMargins(0, 0, 0, 0);
     rightLayout->setSpacing(8);
 
@@ -44,22 +48,28 @@ CalendarWidget::CalendarWidget(QString workspacePath, QWidget* parent)
 
     m_taskListWidget = new QListWidget(this);
     m_taskListWidget->setStyleSheet(
-        "QListWidget { background-color: palette(base); color: palette(text); border: 1px solid palette(mid); border-radius: 6px; padding: 4px; }"
-        "QListWidget::item { padding: 6px; border-bottom: 1px solid palette(alternate-base); border-radius: 4px; }"
-        "QListWidget::item:hover { background-color: palette(alternate-base); }"
-    );
+        "QListWidget { background-color: palette(base); color: palette(text); border: 1px solid "
+        "palette(mid); border-radius: 6px; padding: 4px; }"
+        "QListWidget::item { padding: 6px; border-bottom: 1px solid palette(alternate-base); "
+        "border-radius: 4px; }"
+        "QListWidget::item:hover { background-color: palette(alternate-base); }");
     rightLayout->addWidget(m_taskListWidget, 1);
 
-    auto* inputLayout = new QHBoxLayout();
+    auto *inputLayout = new QHBoxLayout();
     inputLayout->setSpacing(6);
     m_taskInput = new QLineEdit(this);
     m_taskInput->setPlaceholderText("Add a task or note for this day...");
-    m_taskInput->setStyleSheet("QLineEdit { background-color: palette(base); color: palette(text); border: 1px solid palette(mid); border-radius: 4px; padding: 6px; }");
+    m_taskInput->setStyleSheet(
+        "QLineEdit { background-color: palette(base); color: palette(text); border: 1px solid "
+        "palette(mid); border-radius: 4px; padding: 6px; }");
     connect(m_taskInput, &QLineEdit::returnPressed, this, &CalendarWidget::onAddTask);
     inputLayout->addWidget(m_taskInput, 1);
 
     m_addTaskBtn = new QPushButton("Add", this);
-    m_addTaskBtn->setStyleSheet("QPushButton { background-color: palette(button); color: palette(button-text); border: 1px solid palette(mid); border-radius: 4px; padding: 6px 12px; } QPushButton:hover { background-color: palette(alternate-base); }");
+    m_addTaskBtn->setStyleSheet(
+        "QPushButton { background-color: palette(button); color: palette(button-text); border: 1px "
+        "solid palette(mid); border-radius: 4px; padding: 6px 12px; } QPushButton:hover { "
+        "background-color: palette(alternate-base); }");
     connect(m_addTaskBtn, &QPushButton::clicked, this, &CalendarWidget::onAddTask);
     inputLayout->addWidget(m_addTaskBtn);
 
@@ -75,18 +85,19 @@ CalendarWidget::CalendarWidget(QString workspacePath, QWidget* parent)
     onDateSelected(m_currentDate);
 }
 
-QString CalendarWidget::dailyNotePath(const QDate& date) const {
-    if (m_workspacePath.isEmpty()) return QString();
+QString CalendarWidget::dailyNotePath(const QDate &date) const {
+    if (m_workspacePath.isEmpty())
+        return QString();
     return m_workspacePath + "/" + date.toString("yyyy-MM-dd") + ".md";
 }
 
-void CalendarWidget::onDateSelected(const QDate& date) {
+void CalendarWidget::onDateSelected(const QDate &date) {
     m_currentDate = date;
     m_selectedDateLabel->setText(date.toString("dddd, MMMM d, yyyy"));
     loadTasksForDate(date);
 }
 
-void CalendarWidget::loadTasksForDate(const QDate& date) {
+void CalendarWidget::loadTasksForDate(const QDate &date) {
     m_taskListWidget->clear();
     const QString path = dailyNotePath(date);
     if (path.isEmpty() || !QFile::exists(path)) {
@@ -106,7 +117,8 @@ void CalendarWidget::loadTasksForDate(const QDate& date) {
 
 void CalendarWidget::onAddTask() {
     const QString text = m_taskInput->text().trimmed();
-    if (text.isEmpty()) return;
+    if (text.isEmpty())
+        return;
 
     if (m_workspacePath.isEmpty()) {
         QMessageBox::information(this, "Workspace", "Please open a workspace folder first.");
