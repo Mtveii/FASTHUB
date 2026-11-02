@@ -126,7 +126,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
-          modules: 'qtwebengine qtwebchannel qtpositioning qtdeclarative'
+          modules: 'qtwebengine qtwebchannel qtpositioning'
           cache: false
 
       - name: Setup Ninja Build System
@@ -218,7 +218,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
-          modules: 'qtwebengine qtwebchannel qtpositioning qtdeclarative'
+          modules: 'qtwebengine qtwebchannel qtpositioning'
           cache: false
 
       - name: Setup Ninja Build System
@@ -298,7 +298,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_arm64_cross_compiled
-          modules: 'qtwebengine qtwebchannel qtpositioning qtdeclarative'
+          modules: 'qtwebengine qtwebchannel qtpositioning'
           cache: false
 
       - name: Configure CMake (ARM64 Target)
