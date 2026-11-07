@@ -31,6 +31,28 @@ WebEmbedWidget::WebEmbedWidget(const QString &name, const QString &homeUrl, QWid
 
     m_view = new QWebEngineView(profile, this);
     m_view->settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+
+    // Grant camera/microphone/screen-capture permissions on request so that
+    // providers embedded via WebEngine (Discord/Steam web clients) can use
+    // the PC's hardware (mic, camera, screen share) instead of being silently
+    // blocked by Chromium's default permission policy.
+    connect(m_view->page(), &QWebEnginePage::featurePermissionRequested, this,
+            [this](const QUrl &origin, QWebEnginePage::Feature feature) {
+                using F = QWebEnginePage::Feature;
+                switch (feature) {
+                case F::MediaAudioCapture:
+                case F::MediaVideoCapture:
+                case F::MediaAudioVideoCapture:
+                case F::DesktopAudioVideoCapture:
+                case F::DesktopVideoCapture:
+                case F::Notifications:
+                    m_view->page()->setFeaturePermission(origin, feature,
+                                                        QWebEnginePage::PermissionGrantedByUser);
+                    break;
+                default:
+                    break;
+                }
+            });
     m_view->setZoomFactor(InterfaceSettings::instance().webZoomPercent() / 100.0);
     connect(
         &InterfaceSettings::instance(), &InterfaceSettings::webZoomChanged, this,
