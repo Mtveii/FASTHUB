@@ -4,6 +4,7 @@
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
 #include <QWebEnginePage>
+#include <QWebEnginePermission>
 #include <QStandardPaths>
 #include <QDir>
 
@@ -28,26 +29,45 @@ WebEmbedWidget::WebEmbedWidget(const QString &name, const QString &homeUrl, QWid
     profile->setPersistentStoragePath(dataPath);
     profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
     profile->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
+    profile->setPersistentPermissionsPolicy(
+        QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
+
+    // Pre-grant any previously stored media permissions so Discord/Steam
+    // do not start with a stale "denied" state from an earlier run.
+    for (const auto &perm : profile->listAllPermissions()) {
+        using PT = QWebEnginePermission::PermissionType;
+        switch (perm.permissionType()) {
+        case PT::MediaAudioCapture:
+        case PT::MediaVideoCapture:
+        case PT::MediaAudioVideoCapture:
+        case PT::DesktopVideoCapture:
+        case PT::DesktopAudioVideoCapture:
+            perm.grant();
+            break;
+        default:
+            break;
+        }
+    }
 
     m_view = new QWebEngineView(profile, this);
     m_view->settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    m_view->settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // Grant camera/microphone/screen-capture permissions on request so that
     // providers embedded via WebEngine (Discord/Steam web clients) can use
     // the PC's hardware (mic, camera, screen share) instead of being silently
     // blocked by Chromium's default permission policy.
-    connect(m_view->page(), &QWebEnginePage::featurePermissionRequested, this,
-            [this](const QUrl &origin, QWebEnginePage::Feature feature) {
-                using F = QWebEnginePage::Feature;
-                switch (feature) {
-                case F::MediaAudioCapture:
-                case F::MediaVideoCapture:
-                case F::MediaAudioVideoCapture:
-                case F::DesktopAudioVideoCapture:
-                case F::DesktopVideoCapture:
-                case F::Notifications:
-                    m_view->page()->setFeaturePermission(origin, feature,
-                                                         QWebEnginePage::PermissionGrantedByUser);
+    connect(m_view->page(), &QWebEnginePage::permissionRequested, this,
+            [](QWebEnginePermission permission) {
+                using PT = QWebEnginePermission::PermissionType;
+                switch (permission.permissionType()) {
+                case PT::MediaAudioCapture:
+                case PT::MediaVideoCapture:
+                case PT::MediaAudioVideoCapture:
+                case PT::DesktopVideoCapture:
+                case PT::DesktopAudioVideoCapture:
+                case PT::Notifications:
+                    permission.grant();
                     break;
                 default:
                     break;
