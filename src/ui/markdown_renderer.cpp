@@ -1,5 +1,6 @@
 #include "markdown_renderer.h"
 
+#include <QHash>
 #include <QRegularExpression>
 
 #include "theme_manager.h"
@@ -18,12 +19,21 @@ void processOutput(const MD_CHAR *data, MD_SIZE size, void *userdata) {
 
 /// @brief Color role of the active theme with fallbacks for tests/early UI.
 QString themeColor(const QString &role, const char *fallback) {
+    static QHash<QString, QString> cache;
+    const QString key = role + QStringLiteral("|") + ThemeManager::instance().currentThemeId();
+    const auto it = cache.constFind(key);
+    if (it != cache.constEnd()) {
+        return it.value();
+    }
+    QString result = QString::fromLatin1(fallback);
     for (const auto &t : ThemeManager::instance().themes()) {
         if (t.id == ThemeManager::instance().currentThemeId()) {
-            return t.colors.value(role, QString::fromLatin1(fallback));
+            result = t.colors.value(role, QString::fromLatin1(fallback));
+            break;
         }
     }
-    return QString::fromLatin1(fallback);
+    cache.insert(key, result);
+    return result;
 }
 
 } // namespace

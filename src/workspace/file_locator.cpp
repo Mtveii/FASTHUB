@@ -2,12 +2,15 @@
 
 #include <QDir>
 #include <QDirIterator>
+#include <QHash>
 #include <QFile>
 #include <QFileInfo>
 
 namespace fasthub::workspace {
 
 namespace {
+
+static QHash<QString, QString> s_findCache;
 
 bool namesEqual(const QString &a, const QString &b) {
     return QString::compare(a, b, Qt::CaseInsensitive) == 0;
@@ -63,7 +66,16 @@ QString FileLocator::findFileByName(const QString &rootPath, const QString &name
     if (cleaned.isEmpty() || !QDir(cleaned).exists()) {
         return {};
     }
-    return searchRoot(cleaned, name.trimmed());
+
+    const QString key = cleaned + QStringLiteral("|") + name.trimmed();
+    const auto it = s_findCache.constFind(key);
+    if (it != s_findCache.constEnd()) {
+        return it.value();
+    }
+
+    const QString result = searchRoot(cleaned, name.trimmed());
+    s_findCache.insert(key, result);
+    return result;
 }
 
 QString FileLocator::createIfMissing(const QString &rootPath, const QString &name) {
@@ -84,6 +96,8 @@ QString FileLocator::createIfMissing(const QString &rootPath, const QString &nam
     QFile file(path);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         file.close();
+        const QString key = rootPath.trimmed() + QStringLiteral("|") + name.trimmed();
+        s_findCache.insert(key, path);
         return path;
     }
     return {};

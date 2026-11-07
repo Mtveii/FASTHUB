@@ -33,6 +33,10 @@ void SearchDialog::setupUi() {
     m_searchLineEdit->setStyleSheet(
         "QLineEdit { font-size: 15px; padding: 8px; border-radius: 6px; background-color: "
         "palette(base); color: palette(text); border: 1px solid palette(mid); }");
+    m_debounceTimer = new QTimer(this);
+    m_debounceTimer->setSingleShot(true);
+    m_debounceTimer->setInterval(250);
+    connect(m_debounceTimer, &QTimer::timeout, this, &SearchDialog::runSearch);
     connect(m_searchLineEdit, &QLineEdit::textChanged, this, &SearchDialog::onSearchTextChanged);
     layout->addWidget(m_searchLineEdit);
 
@@ -58,6 +62,13 @@ void SearchDialog::setupUi() {
 }
 
 void SearchDialog::onSearchTextChanged(const QString &text) {
+    Q_UNUSED(text);
+    m_debounceTimer->stop();
+    m_debounceTimer->start();
+}
+
+void SearchDialog::runSearch() {
+    const QString text = m_searchLineEdit->text();
     m_resultsListWidget->clear();
     if (!m_searchProvider || text.trimmed().isEmpty()) {
         return;
