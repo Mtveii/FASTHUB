@@ -45,6 +45,8 @@ add_library(ui STATIC
     telegram/telegram_qr_login_dialog.h
     telegram/ayugram_embed_widget.cpp
     telegram/ayugram_embed_widget.h
+    obsidian/obsidian_embed_widget.cpp
+    obsidian/obsidian_embed_widget.h
     telegram/embed_types.h
     telegram/ayu_geometry_sync.cpp
     telegram/ayu_geometry_sync.h

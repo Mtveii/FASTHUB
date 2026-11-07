@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
+#include <QStandardPaths>
 
 namespace fasthub::ui::ayu {
 
@@ -29,6 +30,28 @@ QString ProcessLauncher::locateExecutable() const {
         candidates += QDir::cleanPath(
             appDir + QStringLiteral("/../../../../third_party/ayugram/AyuGram.exe"));
     }
+    // Obsidian is not vendored with FastHub; resolve it from the standard
+    // per-user / per-machine install locations.
+    if (m_imageName.compare(QStringLiteral("Obsidian.exe"), Qt::CaseInsensitive) == 0) {
+        const QString localAppData =
+            QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        // GenericDataLocation -> .../Local; Obsidian lives under %LOCALAPPDATA%.
+        const QString localApp = qEnvironmentVariable("LOCALAPPDATA");
+        const QString programFiles = qEnvironmentVariable("PROGRAMFILES");
+        const QString programFilesX86 = qEnvironmentVariable("PROGRAMFILES(X86)");
+        QStringList obsidianCandidates = {
+            QDir::cleanPath(localApp + QStringLiteral("/Obsidian/Obsidian.exe")),
+            QDir::cleanPath(localAppData + QStringLiteral("/../Local/Obsidian/Obsidian.exe")),
+            QDir::cleanPath(programFiles + QStringLiteral("/Obsidian/Obsidian.exe")),
+            QDir::cleanPath(programFilesX86 + QStringLiteral("/Obsidian/Obsidian.exe")),
+        };
+        for (const QString &path : obsidianCandidates) {
+            if (QFileInfo::exists(path)) {
+                return path;
+            }
+        }
+    }
+
     for (const QString &path : candidates) {
         if (QFileInfo::exists(path)) {
             return path;

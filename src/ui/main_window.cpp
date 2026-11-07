@@ -6,6 +6,7 @@
 #include "developer/developer_dialog.h"
 #include "web_embed_widget.h"
 #include "telegram/ayugram_embed_widget.h"
+#include "obsidian/obsidian_embed_widget.h"
 #include "icon_util.h"
 #include "interface_settings.h"
 #include "context_broker.h"
@@ -108,6 +109,11 @@ void MainWindow::setupUi() {
     m_topTabs->addTab(new WebEmbedWidget(QStringLiteral("discord"),
                                          QStringLiteral("https://discord.com/app"), this),
                       providerIcon(kTabs[2].iconResource, kTabs[2].accent), kTabs[2].title);
+
+    // Obsidian: native desktop client embedded (separate process + HWND capture).
+    m_topTabs->addTab(new ObsidianEmbedWidget(this),
+                      providerIcon(kTabs[0].iconResource, kTabs[0].accent),
+                      QStringLiteral("Obsidian"));
 
     // Steam: embedded web chat (friends + chat after one login).
     m_topTabs->addTab(new WebEmbedWidget(QStringLiteral("steam"),

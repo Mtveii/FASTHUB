@@ -47,7 +47,7 @@ WebEmbedWidget::WebEmbedWidget(const QString &name, const QString &homeUrl, QWid
                 case F::DesktopVideoCapture:
                 case F::Notifications:
                     m_view->page()->setFeaturePermission(origin, feature,
-                                                        QWebEnginePage::PermissionGrantedByUser);
+                                                         QWebEnginePage::PermissionGrantedByUser);
                     break;
                 default:
                     break;
